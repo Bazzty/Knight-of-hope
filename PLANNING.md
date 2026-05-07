@@ -20,7 +20,7 @@
 > _Completar al cierre de la semana…_
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+No se instalo phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
 
 ---
 

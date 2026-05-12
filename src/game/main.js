@@ -1,6 +1,8 @@
 import Phaser from 'phaser';
 import GameScene from './scenes/GameScene';
 
+let gameInstance = null;
+
 const config = {
     type: Phaser.AUTO,
     parent: 'phaser-container', // ¡Este ID debe ser igual al del div en App.vue!
@@ -14,5 +16,26 @@ const config = {
 };
 
 export const initGame = () => {
-    return new Phaser.Game(config);
+    if (gameInstance) {
+        gameInstance.destroy(true);
+    }
+
+    gameInstance = new Phaser.Game(config);
+
+    if (typeof window !== 'undefined') {
+        window.__KOH_GAME = gameInstance;
+    }
+
+    return gameInstance;
+};
+
+export const destroyGame = () => {
+    if (gameInstance) {
+        gameInstance.destroy(true);
+        gameInstance = null;
+    }
+
+    if (typeof window !== 'undefined') {
+        window.__KOH_GAME = null;
+    }
 };

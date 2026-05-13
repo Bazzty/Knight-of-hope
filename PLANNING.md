@@ -6,7 +6,7 @@
 
 ---
 
-## Semana 1 — Diseño y configuración (30 abril – 5 mayo)
+## Semana 1 — Diseño y configuración (04 de mayo – 10 de mayo)
 
 ### Tareas planificadas
 - [x] Crear el repositorio en GitHub
@@ -24,7 +24,7 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 
 ---
 
-## Semana 2 — Mecánicas base (6 – 12 mayo)
+## Semana 2 — Mecánicas base (11 de mayo – 17 de mayo)
 
 ### Tareas planificadas
 - [ ] Crear Vista de juego y modelos
@@ -43,7 +43,7 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 
 ---
 
-## Semana 3 — Sistema de habitaciones y mejoras (13 – 19 mayo)
+## Semana 3 — Sistema de habitaciones y mejoras (18 de mayo– 24 de mayo)
 
 ### Tareas planificadas
 - [ ] Sistema de habitaciones: al limpiar una, se genera la siguiente
@@ -61,7 +61,7 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 
 ---
 
-## Semana 4 — Pulido y entrega (20 – 28 mayo)
+## Semana 4 — Pulido y entrega (25 mayo – 28 mayo)
 
 ### Tareas planificadas
 - [ ] Docker: crear `Dockerfile` y probar localmente

@@ -9,12 +9,12 @@
 ## Semana 1 — Diseño y configuración (30 abril – 5 mayo)
 
 ### Tareas planificadas
-- [ ] Crear el repositorio en GitHub
-- [ ] Redactar y subir `DESIGN.md` con mockups y descripción del juego
-- [ ] Redactar y subir `PLANNING.md` con la planificación
-- [ ] Enviar correo al profesor con nombres + link al repo
-- [ ] Configurar el proyecto: Vue + Vite + pnpm + ESLint + Vitest
-- [ ] Integrar Phaser 3 y mostrar un canvas en blanco dentro de Vue
+- [x] Crear el repositorio en GitHub
+- [x] Redactar y subir `DESIGN.md` con mockups y descripción del juego
+- [x] Redactar y subir `PLANNING.md` con la planificación
+- [x] Enviar correo al profesor con nombres + link al repo
+- [x] Configurar el proyecto: Vue + Vite + pnpm + ESLint + Vitest
+- [x] Integrar Phaser 3 y mostrar un canvas en blanco dentro de Vue
 
 ### Lo que se logró completar
 > _Completar al cierre de la semana…_
@@ -27,10 +27,10 @@
 ## Semana 2 — Mecánicas base (6 – 12 mayo)
 
 ### Tareas planificadas
-- [ ] Crear Vista de juego y modelos
+- [x] Crear Vista de juego y modelos
 - [ ] Caballero en pantalla con movimiento (teclado)
 - [ ] Caballero con animación de caminar y atacar
-- [ ] Primera habitación con bordes (no salirse de los límites)
+- [x] Primera habitación con bordes (no salirse de los límites)
 - [ ] Un enemigo básico que persigue al caballero
 - [ ] Sistema de colisiones: el enemigo daña al caballero
 - [ ] El caballero puede atacar y eliminar al enemigo

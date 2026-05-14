@@ -10,12 +10,42 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('knight', 'assets/knight.png');
+        // Al cargarlo como imagen plana, evitamos que Phaser recorte uniformemente con márgenes en ambos ejes
+        this.load.image('knight', 'assets/test4.png');
     }
 
     create() {
         const { width, height } = this.scale;
         this.physics.world.setBounds(0, 0, width, height);
+
+        // Agregamos manualmente los cuadros al mapa de la textura porque la imagen original 
+        // tiene al jugador desplazado específicamente en el eje Y (584px hasta 969px).
+        const texture = this.textures.get('knight');
+        if (texture && !texture.has('0')) {
+            for (let i = 0; i < 8; i++) {
+                // frameId, sourceIndex, x, y, width, height
+                texture.add(i.toString(), 0, i * 352, 584, 352, 386);
+            }
+        }
+
+        if (!this.anims.exists('knight-walk')) {
+            this.anims.create({
+                key: 'knight-walk',
+                // Construimos las referencias de los cuadros de animación explícitamente
+                frames: [
+                    { key: 'knight', frame: '0' },
+                    { key: 'knight', frame: '1' },
+                    { key: 'knight', frame: '2' },
+                    { key: 'knight', frame: '3' },
+                    { key: 'knight', frame: '4' },
+                    { key: 'knight', frame: '5' },
+                    { key: 'knight', frame: '6' },
+                    { key: 'knight', frame: '7' }
+                ],
+                frameRate: 8,
+                repeat: -1,
+            });
+        }
 
         this.player = createPlayer(this, Math.floor(width / 2), Math.floor(height / 2));
         this.cursors = this.input.keyboard.createCursorKeys();

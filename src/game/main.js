@@ -4,8 +4,8 @@ import GameScene from './scenes/GameScene';
 const config = {
     type: Phaser.AUTO,
     parent: 'phaser-container', // ¡Este ID debe ser igual al del div en App.vue!
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 720,
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }

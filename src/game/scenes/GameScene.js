@@ -25,6 +25,8 @@ export default class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
+        this.physics.world.setBounds(0, 0, width, height); 
+
         // Posiciones aproximadas de los porta-antorchas en el fondo escalado a 800x600
         const torchScale = 1.5;
         const torchPositions = [

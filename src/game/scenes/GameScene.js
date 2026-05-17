@@ -7,59 +7,63 @@ export default class GameScene extends Phaser.Scene {
         this.player = null;
         this.cursors = null;
         this.wasd = null;
+        this.attackKey = null;
     }
 
     preload() {
-        // Al cargarlo como imagen plana, evitamos que Phaser recorte uniformemente con márgenes en ambos ejes
-        this.load.image('knight', 'assets/test4.png');
+        // Ponemos ?v=12 para que ignore totalmente cualquier error de caché anterior
+
+        // Caminar: 480 / 8 cuadros = 60px
+        this.load.spritesheet('knight_walk', 'assets/walk_final.png?v=12', {
+            frameWidth: 60,
+            frameHeight: 200
+        });
+
+        // ¡AQUÍ ESTÁ LA MAGIA! Cambiado a 60px para que calce con tu cuadrícula real
+        this.load.spritesheet('knight_attack', 'assets/attack_final.png?v=12', {
+            frameWidth: 60,
+            frameHeight: 200
+        });
     }
 
     create() {
         const { width, height } = this.scale;
         this.physics.world.setBounds(0, 0, width, height);
 
-        // Agregamos manualmente los cuadros al mapa de la textura porque la imagen original 
-        // tiene al jugador desplazado específicamente en el eje Y (584px hasta 969px).
-        const texture = this.textures.get('knight');
-        if (texture && !texture.has('0')) {
-            for (let i = 0; i < 8; i++) {
-                // frameId, sourceIndex, x, y, width, height
-                texture.add(i.toString(), 0, i * 352, 584, 352, 386);
-            }
+        // Animación de caminar (8 cuadros, del 0 al 7)
+        if (!this.anims.exists('knight_walk_anim')) {
+            this.anims.create({
+                key: 'knight_walk_anim',
+                frames: this.anims.generateFrameNumbers('knight_walk', { start: 0, end: 7 }),
+                frameRate: 8,
+                repeat: -1
+            });
         }
 
-        if (!this.anims.exists('knight-walk')) {
+        // Animación de ataque (6 cuadros, del 0 al 5)
+        if (!this.anims.exists('knight_attack_anim')) {
             this.anims.create({
-                key: 'knight-walk',
-                // Construimos las referencias de los cuadros de animación explícitamente
-                frames: [
-                    { key: 'knight', frame: '0' },
-                    { key: 'knight', frame: '1' },
-                    { key: 'knight', frame: '2' },
-                    { key: 'knight', frame: '3' },
-                    { key: 'knight', frame: '4' },
-                    { key: 'knight', frame: '5' },
-                    { key: 'knight', frame: '6' },
-                    { key: 'knight', frame: '7' }
-                ],
-                frameRate: 8,
-                repeat: -1,
+                key: 'knight_attack_anim',
+                frames: this.anims.generateFrameNumbers('knight_attack', { start: 0, end: 5 }),
+                frameRate: 10,
+                repeat: 0
             });
         }
 
         this.player = createPlayer(this, Math.floor(width / 2), Math.floor(height / 2));
+        this.player.setDepth(10);
+
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,A,S,D');
-        this.input.keyboard.addCapture(['W', 'A', 'S', 'D', 'UP', 'DOWN', 'LEFT', 'RIGHT']);
-
-        if (this.game && this.game.canvas) {
-            this.game.canvas.setAttribute('tabindex', '0');
-            this.game.canvas.focus();
-        }
+        this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     }
 
     update() {
         if (!this.player || !this.cursors || !this.wasd) return;
+
+        if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+            this.player.attack();
+        }
 
         this.player.updateMovement({
             left: this.cursors.left.isDown || this.wasd.A.isDown,

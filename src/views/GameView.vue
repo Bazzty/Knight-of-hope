@@ -1,9 +1,18 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
-import { initGame, destroyGame } from '@/game/main'
+import { destroyGame, initGame } from '@/game/main'
+
+let game = null
 
 onMounted(() => {
-  initGame()
+  game = initGame()
+})
+
+onUnmounted(() => {
+  if (game) {
+    destroyGame()
+    game = null
+  }
 })
 
 onUnmounted(() => {

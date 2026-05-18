@@ -6,7 +6,7 @@
 
 ---
 
-## Semana 1 — Diseño y configuración (30 abril – 5 mayo)
+## Semana 1 — Diseño y configuración
 
 ### Tareas planificadas
 - [x] Crear el repositorio en GitHub
@@ -24,7 +24,7 @@
 
 ---
 
-## Semana 2 — Mecánicas base (6 – 12 mayo)
+## Semana 2 — Mecánicas base 
 
 ### Tareas planificadas
 - [x] Crear Vista de juego y modelos
@@ -43,7 +43,7 @@
 
 ---
 
-## Semana 3 — Sistema de habitaciones y mejoras (13 – 19 mayo)
+## Semana 3 — Sistema de habitaciones y mejoras 
 
 ### Tareas planificadas
 - [ ] Sistema de habitaciones: al limpiar una, se genera la siguiente
@@ -61,7 +61,7 @@
 
 ---
 
-## Semana 4 — Pulido y entrega (20 – 28 mayo)
+## Semana 4 — Pulido y entrega 
 
 ### Tareas planificadas
 - [ ] Docker: crear `Dockerfile` y probar localmente

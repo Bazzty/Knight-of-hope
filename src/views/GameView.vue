@@ -14,10 +14,6 @@ onUnmounted(() => {
     game = null
   }
 })
-
-onUnmounted(() => {
-  destroyGame()
-})
 </script>
 
 <template>

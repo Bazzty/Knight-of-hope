@@ -6,8 +6,8 @@ let gameInstance = null;
 const config = {
     type: Phaser.AUTO,
     parent: 'phaser-container', // ¡Este ID debe ser igual al del div en App.vue!
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 720,
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }
@@ -32,10 +32,6 @@ export const initGame = () => {  // Asegura que solo haya una instancia del jueg
 export const destroyGame = () => {
     if (gameInstance) {
         gameInstance.destroy(true);
-        gameInstance = null;  // Limpia la referencia a la instancia del juego para permitir que el recolector de basura libere la memoria
-    }
-
-    if (typeof window !== 'undefined') {
-        window.__KOH_GAME = null;  // Limpia la referencia global a la instancia del juego para evitar fugas de memoria
+        gameInstance = null;
     }
 };

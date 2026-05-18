@@ -1,22 +1,21 @@
 export default function createPlayer(scene, x, y) {
     const player = scene.physics.add.sprite(x, y, 'knight_walk', 0);
 
-    player.setScale(1);
     player.setCollideWorldBounds(true);
-    player.speed = 180;
-
+    player.speed = 150;
     player.isAttacking = false;
 
-    // Cuando la animación de ataque termina, volver a la animación de caminar
+    function resetToIdle() {
+        player.isAttacking = false;
+        player.play('knight_walk_anim', true);
+        if (!player.body || (player.body.velocity.x === 0 && player.body.velocity.y === 0)) {
+            player.anims.pause();
+        }
+    }
+
     player.on('animationcomplete', (anim) => {
         if (anim.key === 'knight_attack_anim') {
-            player.isAttacking = false;
-            if (player.body && (player.body.velocity.x !== 0 || player.body.velocity.y !== 0)) {
-                player.play('knight_walk_anim', true);
-            } else {
-                player.play('knight_walk_anim', true);
-                player.anims.pause();
-            }
+            resetToIdle();
         }
     });
 
@@ -24,67 +23,42 @@ export default function createPlayer(scene, x, y) {
         if (player.isAttacking) return;
 
         player.isAttacking = true;
-
-        // DEJAMOS QUE PHASER MANEJE LA TEXTURA: .play() cambia el spritesheet automáticamente 
-        // sin necesidad de setTexture previo, eliminando el parpadeo estilo PowerPoint.
         player.play('knight_attack_anim', true);
 
-        // RESPALDO SEGURO: después del tiempo máximo esperado, resetear estado sin forzar texturas
         scene.time.delayedCall(800, () => {
-            if (player.isAttacking) {
-                player.isAttacking = false;
-                if (player.body && (player.body.velocity.x !== 0 || player.body.velocity.y !== 0)) {
-                    player.play('knight_walk_anim', true);
-                } else {
-                    player.play('knight_walk_anim', true);
-                    player.anims.pause();
-                }
-            }
+            if (player.isAttacking) resetToIdle();
         });
     };
 
-    player.updateMovement = (input) => {
-        const body = player.body;
-        if (!body) return;
+    player.updateMovement = (input) => { // Lógica de movimiento del jugador
+        const body = player.body; // Accede al cuerpo del jugador para aplicar la física
+        if (!body) return; // Asegura que el cuerpo del jugador esté disponible antes de intentar acceder a él
 
         if (player.isAttacking) {
-            body.setVelocity(0, 0);
+            body.setVelocity(1, 1); // Reduce la velocidad al atacar para dar una sensación de peso
             return;
         }
 
-        body.setVelocity(0, 0);
-        let isMoving = false;
+        let vx = 0; // Velocidad horizontal inicializada en 0
+        let vy = 0; // Velocidad vertical inicializada en 0
 
-        if (input.left) {
-            body.setVelocityX(-player.speed);
+        if (input.left) {  //Logica de movimiento horizontal
+            vx = -1;
             player.setFlipX(true);
-            isMoving = true;
         } else if (input.right) {
-            body.setVelocityX(player.speed);
+            vx = 1;
             player.setFlipX(false);
-            isMoving = true;
         }
 
-        if (input.up) {
-            body.setVelocityY(-player.speed);
-            isMoving = true;
-        } else if (input.down) {
-            body.setVelocityY(player.speed);
-            isMoving = true;
-        }
+        body.setVelocity(vx * player.speed, vy * player.speed); // Aplica la velocidad al cuerpo del jugador
 
-        if (body.velocity.x !== 0 && body.velocity.y !== 0) {
-            body.velocity.normalize().scale(player.speed);
-        }
+        const isMoving = vx !== 0 || vy !== 0; 
 
-        if (isMoving) {
+        if (isMoving) { //
             player.play('knight_walk_anim', true);
-        } else {
-            // Solo detenido y no atacando: mostrar frame idle consistente sin cambiar textura
-            if (!player.anims.isPlaying || player.anims.currentAnim.key !== 'knight_attack_anim') {
-                player.play('knight_walk_anim', true);
-                player.anims.pause();
-            }
+        } else if (!player.anims.isPlaying || player.anims.currentAnim?.key !== 'knight_attack_anim') {
+            player.play('knight_walk_anim', true);
+            player.anims.pause();
         }
     };
 

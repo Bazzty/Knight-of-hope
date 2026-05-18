@@ -1,5 +1,9 @@
 export default function createPlayer(scene, x, y) {
     const player = scene.physics.add.sprite(x, y, 'knight_walk', 0);
+    player.setOrigin(0.5, 0.85);
+    player.setScale(2);
+    player.setBodySize(60, 280, 30, 20);
+   
 
     player.setCollideWorldBounds(true);
     player.speed = 150;

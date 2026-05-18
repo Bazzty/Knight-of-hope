@@ -17,12 +17,12 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 64,
         });
         this.load.spritesheet('knight_walk', 'assets/movimiento.png', {
-            frameWidth: 60,
-            frameHeight: 200
+            frameWidth: 120,
+            frameHeight: 400
         });
         this.load.spritesheet('knight_attack', 'assets/ataque.png', {
-            frameWidth: 60,
-            frameHeight: 200
+            frameWidth: 120,
+            frameHeight: 400
         });
     }
 
@@ -53,7 +53,7 @@ export default class GameScene extends Phaser.Scene {
         if (!this.anims.exists('knight_walk_anim')) {
             this.anims.create({
                 key: 'knight_walk_anim',
-                frames: this.anims.generateFrameNumbers('knight_walk', { start: 0, end: 7 }),
+                frames: this.anims.generateFrameNumbers('knight_walk', { start: 0, end: 5 }),
                 frameRate: 8,
                 repeat: -1
             });
@@ -68,7 +68,8 @@ export default class GameScene extends Phaser.Scene {
             });
         }
 
-        this.player = createPlayer(this, Math.floor(width / 2), Math.floor(height / 2));
+
+        this.player = createPlayer(this, Math.floor(width / 2), 750);
         this.player.setDepth(10);
 
         this.cursors = this.input.keyboard.createCursorKeys();

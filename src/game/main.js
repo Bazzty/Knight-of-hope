@@ -5,9 +5,10 @@ let gameInstance = null;
 
 const config = {
     type: Phaser.AUTO,
-    parent: 'phaser-container', // ¡Este ID debe ser igual al del div en App.vue!
+    parent: 'phaser-container',
     width: 1280,
     height: 720,
+    pixelArt: true,
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }

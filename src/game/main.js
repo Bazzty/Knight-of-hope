@@ -13,6 +13,17 @@ const config = {
     scene: [GameScene]
 };
 
+let gameInstance = null;
+
 export const initGame = () => {
-    return new Phaser.Game(config);
+    if (gameInstance) gameInstance.destroy(true);
+    gameInstance = new Phaser.Game(config);
+    return gameInstance;
+};
+
+export const destroyGame = () => {
+    if (gameInstance) {
+        gameInstance.destroy(true);
+        gameInstance = null;
+    }
 };

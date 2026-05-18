@@ -30,19 +30,18 @@ export default function createPlayer(scene, x, y) {
         });
     };
 
-    player.updateMovement = (input) => { // Lógica de movimiento del jugador
-        const body = player.body; // Accede al cuerpo del jugador para aplicar la física
-        if (!body) return; // Asegura que el cuerpo del jugador esté disponible antes de intentar acceder a él
+    player.updateMovement = (input) => {
+        const body = player.body;
+        if (!body) return;
 
         if (player.isAttacking) {
-            body.setVelocity(1, 1); // Reduce la velocidad al atacar para dar una sensación de peso
+            body.setVelocity(0, 0);
             return;
         }
 
-        let vx = 0; // Velocidad horizontal inicializada en 0
-        let vy = 0; // Velocidad vertical inicializada en 0
+        let vx = 0;
 
-        if (input.left) {  //Logica de movimiento horizontal
+        if (input.left) {
             vx = -1;
             player.setFlipX(true);
         } else if (input.right) {
@@ -50,11 +49,9 @@ export default function createPlayer(scene, x, y) {
             player.setFlipX(false);
         }
 
-        body.setVelocity(vx * player.speed, vy * player.speed); // Aplica la velocidad al cuerpo del jugador
+        body.setVelocity(vx * player.speed, 0);
 
-        const isMoving = vx !== 0 || vy !== 0; 
-
-        if (isMoving) { //
+        if (vx !== 0) {
             player.play('knight_walk_anim', true);
         } else if (!player.anims.isPlaying || player.anims.currentAnim?.key !== 'knight_attack_anim') {
             player.play('knight_walk_anim', true);

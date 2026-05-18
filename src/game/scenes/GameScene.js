@@ -15,16 +15,12 @@ export default class GameScene extends Phaser.Scene {
         this.load.spritesheet('torch', 'assets/torch.png', {
             frameWidth: 64,
             frameHeight: 64,
-        // Ponemos ?v=12 para que ignore totalmente cualquier error de caché anterior
-
-        // Caminar: 480 / 8 cuadros = 60px
-        this.load.spritesheet('knight_walk', 'assets/movimiento.png?v=12', {
+        });
+        this.load.spritesheet('knight_walk', 'assets/movimiento.png', {
             frameWidth: 60,
             frameHeight: 200
         });
-
-        // ¡AQUÍ ESTÁ LA MAGIA! Cambiado a 60px para que calce con tu cuadrícula real
-        this.load.spritesheet('knight_attack', 'assets/ataque.png?v=12', {
+        this.load.spritesheet('knight_attack', 'assets/ataque.png', {
             frameWidth: 60,
             frameHeight: 200
         });
@@ -33,7 +29,9 @@ export default class GameScene extends Phaser.Scene {
     create() {
         const { width, height } = this.scale;
 
-        this.add.image(width / 2, height /2, 'dungeon').setDisplaySize(width, height);
+        this.add.image(width / 2, height / 2, 'dungeon').setDisplaySize(width, height);
+
+        this.physics.world.setBounds(0, 0, width, height);
 
         this.anims.create({
             key: 'torch-flicker',
@@ -42,21 +40,16 @@ export default class GameScene extends Phaser.Scene {
             repeat: -1
         });
 
-        this.physics.world.setBounds(0, 0, width, height); 
-
-        // Posiciones aproximadas de los porta-antorchas en el fondo escalado a 800x600
-        const torchScale = 1.5;
         const torchPositions = [
-            { x: 540, y:320 },
+            { x: 540, y: 320 },
             { x: 800, y: 320 },
         ];
 
         torchPositions.forEach(({ x, y }, index) => {
-        const sprite = this.add.sprite(x, y, 'torch').setScale(torchScale).play('torch-flicker');
-        if (index === 1) sprite.setFlipX(true);
-        this.physics.world.setBounds(0, 0, width, height);
+            const sprite = this.add.sprite(x, y, 'torch').setScale(1.5).play('torch-flicker');
+            if (index === 1) sprite.setFlipX(true);
+        });
 
-        // Animación de caminar (8 cuadros, del 0 al 7)
         if (!this.anims.exists('knight_walk_anim')) {
             this.anims.create({
                 key: 'knight_walk_anim',
@@ -66,7 +59,6 @@ export default class GameScene extends Phaser.Scene {
             });
         }
 
-        // Animación de ataque (6 cuadros, del 0 al 5)
         if (!this.anims.exists('knight_attack_anim')) {
             this.anims.create({
                 key: 'knight_attack_anim',

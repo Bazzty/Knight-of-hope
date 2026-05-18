@@ -14,13 +14,13 @@ export default class GameScene extends Phaser.Scene {
         // Ponemos ?v=12 para que ignore totalmente cualquier error de caché anterior
 
         // Caminar: 480 / 8 cuadros = 60px
-        this.load.spritesheet('knight_walk', 'assets/walk_final.png?v=12', {
+        this.load.spritesheet('knight_walk', 'assets/movimiento.png?v=12', {
             frameWidth: 60,
             frameHeight: 200
         });
 
         // ¡AQUÍ ESTÁ LA MAGIA! Cambiado a 60px para que calce con tu cuadrícula real
-        this.load.spritesheet('knight_attack', 'assets/attack_final.png?v=12', {
+        this.load.spritesheet('knight_attack', 'assets/ataque.png?v=12', {
             frameWidth: 60,
             frameHeight: 200
         });
@@ -45,7 +45,7 @@ export default class GameScene extends Phaser.Scene {
             this.anims.create({
                 key: 'knight_attack_anim',
                 frames: this.anims.generateFrameNumbers('knight_attack', { start: 0, end: 5 }),
-                frameRate: 10,
+                frameRate: 6,
                 repeat: 0
             });
         }

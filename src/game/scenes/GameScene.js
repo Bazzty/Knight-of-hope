@@ -16,13 +16,13 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 64,
             frameHeight: 64,
         });
-        this.load.spritesheet('knight_walk', 'assets/movimiento.png', {
-            frameWidth: 120,
-            frameHeight: 400
+        this.load.spritesheet('knight_walk', 'assets/movimientoFinal.png', {
+            frameWidth: 69,
+            frameHeight: 69
         });
-        this.load.spritesheet('knight_attack', 'assets/ataque.png', {
-            frameWidth: 120,
-            frameHeight: 400
+        this.load.spritesheet('knight_attack', 'assets/Ataquefinal.png', {
+            frameWidth: 69,
+            frameHeight: 69
         });
     }
 
@@ -53,8 +53,8 @@ export default class GameScene extends Phaser.Scene {
         if (!this.anims.exists('knight_walk_anim')) {
             this.anims.create({
                 key: 'knight_walk_anim',
-                frames: this.anims.generateFrameNumbers('knight_walk', { start: 0, end: 5 }),
-                frameRate: 8,
+                frames: this.anims.generateFrameNumbers('knight_walk', { start: 0, end: 15 }),
+                frameRate: 10,
                 repeat: -1
             });
         }
@@ -62,14 +62,15 @@ export default class GameScene extends Phaser.Scene {
         if (!this.anims.exists('knight_attack_anim')) {
             this.anims.create({
                 key: 'knight_attack_anim',
-                frames: this.anims.generateFrameNumbers('knight_attack', { start: 0, end: 5 }),
-                frameRate: 6,
+                frames: this.anims.generateFrameNumbers('knight_attack', { start: 0, end: 11 }),
+                frameRate: 18,
                 repeat: 0
             });
         }
 
 
-        this.player = createPlayer(this, Math.floor(width / 2), 750);
+        // Empieza en el píxel 200 desde el lado izquierdo de la pantalla
+        this.player = createPlayer(this, 200, 750);
         this.player.setDepth(10);
 
         this.cursors = this.input.keyboard.createCursorKeys();

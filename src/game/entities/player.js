@@ -1,9 +1,13 @@
 export default function createPlayer(scene, x, y) {
     const player = scene.physics.add.sprite(x, y, 'knight_walk', 0);
-    player.setOrigin(0.5, 0.85);
-    player.setScale(2);
-    player.setBodySize(60, 280, 30, 20);
-   
+
+    player.setOrigin(0.5, 1);
+
+    // Scale for 69x69 sprites to make it larger
+    player.setScale(4.5);
+    // Adjusted hit box for the new sprites
+    player.setBodySize(60, 55);
+    player.setOffset(24, 33);
 
     player.setCollideWorldBounds(true);
     player.speed = 150;
@@ -11,7 +15,9 @@ export default function createPlayer(scene, x, y) {
 
     function resetToIdle() {
         player.isAttacking = false;
+        player.setTexture('knight_walk');
         player.play('knight_walk_anim', true);
+
         if (!player.body || (player.body.velocity.x === 0 && player.body.velocity.y === 0)) {
             player.anims.pause();
         }
@@ -27,11 +33,8 @@ export default function createPlayer(scene, x, y) {
         if (player.isAttacking) return;
 
         player.isAttacking = true;
+        player.setTexture('knight_attack');
         player.play('knight_attack_anim', true);
-
-        scene.time.delayedCall(800, () => {
-            if (player.isAttacking) resetToIdle();
-        });
     };
 
     player.updateMovement = (input) => {

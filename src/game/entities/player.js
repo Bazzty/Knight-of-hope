@@ -6,7 +6,7 @@ export default function createPlayer(scene, x, y) {
     // Scale for 69x69 sprites to make it larger
     player.setScale(4.5);
     // Adjusted hit box for the new sprites
-    player.setBodySize(60, 55);
+    player.setBodySize(60, 50);
     player.setOffset(24, 33);
 
     player.setCollideWorldBounds(true);

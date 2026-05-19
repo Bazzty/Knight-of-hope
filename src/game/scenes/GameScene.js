@@ -24,6 +24,10 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 69,
             frameHeight: 69
         });
+        this.load.spritesheet('enemigo', 'assets/enemigo.png', {
+            frameWidth: 69, // Ajusta según las medidas reales de tu spritesheet
+            frameHeight: 69
+        });
     }
 
     create() {
@@ -72,6 +76,12 @@ export default class GameScene extends Phaser.Scene {
         // Empieza en el píxel 200 desde el lado izquierdo de la pantalla
         this.player = createPlayer(this, 200, 750);
         this.player.setDepth(10);
+
+        // Enemigo cubriendo la puerta derecha
+        this.enemigo = this.physics.add.sprite(1100, 480, 'enemigo');
+        this.enemigo.setDepth(9);
+        this.enemigo.setScale(6);
+        this.enemigo.setFlipX(true);
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,A,S,D');

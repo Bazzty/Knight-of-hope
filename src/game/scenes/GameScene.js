@@ -28,6 +28,10 @@ export default class GameScene extends Phaser.Scene {
             frameWidth: 69, // Ajusta según las medidas reales de tu spritesheet
             frameHeight: 69
         });
+        this.load.spritesheet('enemigo_attack', 'assets/ataqueEnemigo.png', {
+            frameWidth: 69,
+            frameHeight: 69
+        });
     }
 
     create() {
@@ -81,15 +85,31 @@ export default class GameScene extends Phaser.Scene {
             });
         }
 
+        if (!this.anims.exists('enemigo_attack_anim')) {
+            this.anims.create({
+                key: 'enemigo_attack_anim',
+                frames: this.anims.generateFrameNumbers('enemigo_attack', { start: 0, end: 11 }),
+                frameRate: 10,
+                repeat: 0
+            });
+        }
+
         // Empieza en el píxel 200 desde el lado izquierdo de la pantalla
         this.player = createPlayer(this, 200, 750);
-        this.player.setDepth(10);
 
         // Enemigo cubriendo la puerta derecha
         this.enemigo = this.physics.add.sprite(1100, 480, 'enemigo');
-        this.enemigo.setDepth(9);
         this.enemigo.setScale(6);
         this.enemigo.setFlipX(true);
+        this.enemigo.isAttacking = false;
+        this.enemigo.lastAttackTime = 0; // Controla el tiempo entre ataques
+
+        this.enemigo.on('animationcomplete', (anim) => {
+            if (anim.key === 'enemigo_attack_anim') {
+                this.enemigo.isAttacking = false;
+                this.enemigo.setTexture('enemigo');
+            }
+        });
 
         this.cursors = this.input.keyboard.createCursorKeys();
         this.wasd = this.input.keyboard.addKeys('W,A,S,D');
@@ -110,12 +130,17 @@ export default class GameScene extends Phaser.Scene {
             down: this.cursors.down.isDown || this.wasd.S.isDown
         });
 
+        // Actualizar la profundidad en función de Y
+        this.player.setDepth(this.player.y);
         // Lógica para que el enemigo persiga al jugador solo en línea horizontal
         if (this.enemigo && this.enemigo.active) {
+            this.enemigo.setDepth(this.enemigo.y);
             const velocidad = 80;
             const distanciaX = this.player.x - this.enemigo.x;
 
-            if (Math.abs(distanciaX) > 200) { // Un pequeño margen para que no tiemble
+            if (this.enemigo.isAttacking) {
+                this.enemigo.setVelocityX(0);
+            } else if (Math.abs(distanciaX) > 160) { // Un pequeño margen para que no tiemble
                 if (distanciaX > 0) {
                     this.enemigo.setVelocityX(velocidad);
                     this.enemigo.setFlipX(false);
@@ -126,7 +151,21 @@ export default class GameScene extends Phaser.Scene {
                 this.enemigo.play('enemigo_walk_anim', true); // Reproducir animación del enemigo
             } else {
                 this.enemigo.setVelocityX(0); // Se detiene si está a su misma altura en X
-                this.enemigo.anims.stop(); // Detener animación cuando deje de moverse
+
+                // Intentar atacar si ha pasado el tiempo de enfriamiento (cooldown, ej: 2.5 seg)
+                const tiempoActual = this.time.now;
+
+                if (tiempoActual - this.enemigo.lastAttackTime > 2500) {
+                    this.enemigo.isAttacking = true;
+                    this.enemigo.lastAttackTime = tiempoActual;
+                    this.enemigo.setTexture('enemigo_attack');
+                    this.enemigo.play('enemigo_attack_anim', true);
+
+                    // Asegurarnos de que mire al jugador al atacar
+                    this.enemigo.setFlipX(distanciaX < 0);
+                } else if (this.enemigo.anims.currentAnim && this.enemigo.anims.currentAnim.key !== 'enemigo_attack_anim') {
+                    this.enemigo.anims.stop(); // Detener animación cuando deje de moverse
+                }
             }
 
             // Asegurarnos de que no se mueva verticalmente

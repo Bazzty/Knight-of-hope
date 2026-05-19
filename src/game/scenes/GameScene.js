@@ -72,6 +72,14 @@ export default class GameScene extends Phaser.Scene {
             });
         }
 
+        if (!this.anims.exists('enemigo_walk_anim')) {
+            this.anims.create({
+                key: 'enemigo_walk_anim',
+                frames: this.anims.generateFrameNumbers('enemigo'), // Usa todos los fotogramas del spritesheet
+                frameRate: 4,
+                repeat: -1
+            });
+        }
 
         // Empieza en el píxel 200 desde el lado izquierdo de la pantalla
         this.player = createPlayer(this, 200, 750);
@@ -101,5 +109,28 @@ export default class GameScene extends Phaser.Scene {
             up: this.cursors.up.isDown || this.wasd.W.isDown,
             down: this.cursors.down.isDown || this.wasd.S.isDown
         });
+
+        // Lógica para que el enemigo persiga al jugador solo en línea horizontal
+        if (this.enemigo && this.enemigo.active) {
+            const velocidad = 80;
+            const distanciaX = this.player.x - this.enemigo.x;
+
+            if (Math.abs(distanciaX) > 200) { // Un pequeño margen para que no tiemble
+                if (distanciaX > 0) {
+                    this.enemigo.setVelocityX(velocidad);
+                    this.enemigo.setFlipX(false);
+                } else {
+                    this.enemigo.setVelocityX(-velocidad);
+                    this.enemigo.setFlipX(true);
+                }
+                this.enemigo.play('enemigo_walk_anim', true); // Reproducir animación del enemigo
+            } else {
+                this.enemigo.setVelocityX(0); // Se detiene si está a su misma altura en X
+                this.enemigo.anims.stop(); // Detener animación cuando deje de moverse
+            }
+
+            // Asegurarnos de que no se mueva verticalmente
+            this.enemigo.setVelocityY(0);
+        }
     }
 }

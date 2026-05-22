@@ -28,12 +28,12 @@
 
 ### Tareas planificadas
 - [x] Crear Vista de juego y modelos
-- [ ] Caballero en pantalla con movimiento (teclado)
-- [ ] Caballero con animación de caminar y atacar
+- [x] Caballero en pantalla con movimiento (teclado)
+- [x] Caballero con animación de caminar y atacar
 - [x] Primera habitación con bordes (no salirse de los límites)
-- [ ] Un enemigo básico que persigue al caballero
-- [ ] Sistema de colisiones: el enemigo daña al caballero
-- [ ] El caballero puede atacar y eliminar al enemigo
+- [x] Un enemigo básico que persigue al caballero
+- [x] Sistema de colisiones: el enemigo daña al caballero
+- [x] El caballero puede atacar y eliminar al enemigo
 
 ### Lo que se logró completar
 > _Completar al cierre de la semana…_

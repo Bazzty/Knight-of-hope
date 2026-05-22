@@ -17,10 +17,15 @@
 - [x] Integrar Phaser 3 y mostrar un canvas en blanco dentro de Vue
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- Se creó el repositorio en GitHub con la estructura base del proyecto
+- Se redactaron y subieron `DESIGN.md` y `PLANNING.md`
+- Se envió el correo al profesor con los nombres del equipo y el link al repositorio
+- Se configuró el proyecto con Vue 3 + Vite + pnpm + ESLint + Vitest
+- Se integró Phaser dentro de Vue y se logró mostrar el canvas en pantalla
+- Se configuraron Vue Router (`/` → HomeView, `/game` → GameView) y Pinia
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+> Se completaron todas las tareas planificadas para esta semana.
 
 ---
 
@@ -36,10 +41,20 @@
 - [x] El caballero puede atacar y eliminar al enemigo
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- `GameView.vue` monta y destruye el canvas de Phaser correctamente (`initGame` / `destroyGame`) evitando memory leaks al navegar
+- Player (`createPlayer()`) con movimiento horizontal mediante flechas/WASD, ataque con SPACE y flip horizontal
+- Animaciones de caminar y atacar con spritesheets dedicados (`movimientoFinal.png`, `Ataquefinal.png`), frames 69×69
+- Escenario de mazmorra con fondo (`dungeon.png`) y antorchas animadas (`torch-flicker`, 25 frames a 10 fps)
+- Colisión con los bordes del mundo mediante `physics.world.setBounds`
+- Enemigo básico que persigue al jugador en el eje X y ataca con cooldown de 2.5 segundos
+- Sistema de combate con hitboxes invisibles usando `physics.add.overlap`
+- HP del jugador (10) con iframes tras recibir daño y efecto de parpadeo (~1 segundo)
+- HUD de vida del jugador en pantalla
+- HP del enemigo (3) con barra visual que lo sigue en cada frame
+- Game Over al morir el jugador → `scene.restart()`
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+> Se completaron todas las tareas planificadas para esta semana.
 
 ---
 

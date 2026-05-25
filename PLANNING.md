@@ -6,7 +6,7 @@
 
 ---
 
-## Semana 1 — Diseño y configuración
+## Semana 1 — Diseño y configuración (04 de mayo – 10 de mayo)
 
 ### Tareas planificadas
 - [x] Crear el repositorio en GitHub
@@ -20,7 +20,7 @@
 > _Completar al cierre de la semana…_
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+No se instaló phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
 
 ---
 

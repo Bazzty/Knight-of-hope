@@ -46,9 +46,9 @@
 ## Semana 3 — Sistema de habitaciones y mejoras 
 
 ### Tareas planificadas
-- [ ] Sistema de habitaciones: al limpiar una, se genera la siguiente
+- [x] Sistema de habitaciones: al limpiar una, se genera la siguiente
 - [ ] Transición entre habitaciones (animación o fade)
-- [ ] 1-2 tipos de enemigos distintos con diferente comportamiento
+- [x] 1-2 tipos de enemigos distintos con diferente comportamiento
 - [ ] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
 - [ ] Aplicar las mejoras al caballero (daño, vida, velocidad)
 - [ ] Pantalla de Game Over y reinicio

@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import createPlayer from '../entities/player';
+import { useGameStore } from '../../stores/gameState';
 
 // GameScene es la escena principal del juego. Extiende Phaser.Scene para tener acceso
 // a todos los sistemas de Phaser (física, animaciones, input, etc.).
@@ -69,6 +70,10 @@ export default class GameScene extends Phaser.Scene {
 
         // Resetear gameOver al reiniciar la escena.
         this.gameOver = false;
+
+        // Sala 1 siempre arranca con HP completo.
+        this.store = useGameStore();
+        this.store.reset();
 
         // ── ESCENARIO ─────────────────────────────────────────────────────────────────
         // Fondo centrado y estirado al tamaño de la pantalla.
@@ -246,6 +251,7 @@ export default class GameScene extends Phaser.Scene {
                         this.doorOverlap = null;
                     }
                     if (this.doorTrigger && this.doorTrigger.destroy) this.doorTrigger.destroy();
+                    this.store.setHp(this.player.hp);
                     this.scene.start('Scenario2');
                 }, null, this);
 
@@ -255,6 +261,7 @@ export default class GameScene extends Phaser.Scene {
         // Hitbox del enemigo golpea al jugador.
         this.physics.add.overlap(this.enemigoAttackHitbox, this.player, () => {
             const playerDied = this.player.takeDamage(1);
+            this.store.setHp(this.player.hp);
             this.updateHpDisplay();
 
             if (playerDied && !this.gameOver) {

@@ -6,7 +6,7 @@
 
 ---
 
-## Semana 1 — Diseño y configuración
+## Semana 1 — Diseño y configuración (04 de mayo – 10 de mayo)
 
 ### Tareas planificadas
 - [x] Crear el repositorio en GitHub
@@ -25,7 +25,7 @@
 - Se configuraron Vue Router (`/` → HomeView, `/game` → GameView) y Pinia
 
 ### Lo que no se logró y el motivo
-> Se completaron todas las tareas planificadas para esta semana.
+No se instaló phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
 
 ---
 
@@ -61,9 +61,9 @@
 ## Semana 3 — Sistema de habitaciones y mejoras 
 
 ### Tareas planificadas
-- [ ] Sistema de habitaciones: al limpiar una, se genera la siguiente
+- [x] Sistema de habitaciones: al limpiar una, se genera la siguiente
 - [ ] Transición entre habitaciones (animación o fade)
-- [ ] 1-2 tipos de enemigos distintos con diferente comportamiento
+- [x] 1-2 tipos de enemigos distintos con diferente comportamiento
 - [ ] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
 - [ ] Aplicar las mejoras al caballero (daño, vida, velocidad)
 - [ ] Pantalla de Game Over y reinicio

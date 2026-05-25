@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import GameScene from './scenes/GameScene';
+import Scenario2 from './scenes/Scenario2';
 
 let gameInstance = null;
 
@@ -13,7 +14,7 @@ const config = {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }
     },
-    scene: [GameScene]
+    scene: [GameScene, Scenario2]
 };
 
 export const initGame = () => {  // Asegura que solo haya una instancia del juego

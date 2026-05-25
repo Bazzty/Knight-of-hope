@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import createPlayer from '../entities/player';
+import { useGameStore } from '../../stores/gameState';
 
 // Scenario2 reutiliza la base de controles/combate de GameScene
 export default class Scenario2 extends Phaser.Scene {
@@ -16,11 +17,6 @@ export default class Scenario2 extends Phaser.Scene {
         this.wasd = null;
         this.attackKey = null;
         this.hpText = null;
-        this.titleText = null;
-        this.enterKey = null;
-        this.promptText = null;
-        this.playerIntroText = null;
-        this.started = false;
     }
 
     // ── PRELOAD ───────────────────────────────────────────────────────────────────────
@@ -50,6 +46,11 @@ export default class Scenario2 extends Phaser.Scene {
     // Inicializa fondo, animaciones, HUD e input.
     create() {
         const { width, height } = this.scale;
+
+        // Resetear estado de partida anterior (el constructor no se re-ejecuta en restart).
+        this.gameOver = false;
+        this.gameOverText = null;
+        this.continueText = null;
 
         // Fondo del cuarto y límites físicos del mundo.
         this.add.image(width / 2, height / 2, 'dungeon2').setDisplaySize(width, height);
@@ -124,30 +125,8 @@ export default class Scenario2 extends Phaser.Scene {
             strokeThickness: 4
         }).setDepth(200);
 
-        // Títulos iniciales antes de comenzar el escenario con ENTER.
-        this.titleText = this.add.text(width / 2, 80, 'SCENARIO 2', {
-            fontSize: '48px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 6
-        }).setOrigin(0.5).setDepth(200);
-
-        this.playerIntroText = this.add.text(width / 2, height - 120, 'Welcome to the next room!', {
-            fontSize: '28px',
-            color: '#ffff66',
-            stroke: '#000000',
-            strokeThickness: 4
-        }).setOrigin(0.5).setDepth(200);
-
-        this.promptText = this.add.text(width / 2, height - 70, 'Press ENTER to continue', {
-            fontSize: '28px',
-            color: '#ffff66',
-            stroke: '#000000',
-            strokeThickness: 4
-        }).setOrigin(0.5).setDepth(200);
-
-        this.enterKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ENTER);
         this.updateHpDisplay = this.updateHpDisplay.bind(this);
+        this.startScenario();
     }
 
     // Actualiza el texto de HP en pantalla.
@@ -177,16 +156,8 @@ export default class Scenario2 extends Phaser.Scene {
     }
 
     // ── UPDATE ────────────────────────────────────────────────────────────────────────
-    // Bucle principal: espera inicio, procesa input y ejecuta IA del slime.
+    // Bucle principal: procesa input y ejecuta IA del slime.
     update() {
-        // Hasta pulsar ENTER, la escena no arranca.
-        if (!this.started) {
-            if (Phaser.Input.Keyboard.JustDown(this.enterKey)) {
-                this.startScenario();
-            }
-            return;
-        }
-
         // En game over, SPACE reinicia la escena.
         if (this.gameOver) {
             if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
@@ -260,19 +231,12 @@ export default class Scenario2 extends Phaser.Scene {
         this.updateHpDisplay();
     }
 
-    // Arranca el escenario al presionar ENTER: crea jugador, slime y overlaps.
+    // Crea jugador, slime y overlaps de combate.
     startScenario() {
-        if (this.started) return;
-
-        this.started = true;
-
-        // Oculta textos de introducción al iniciar.
-        if (this.titleText) this.titleText.destroy();
-        if (this.promptText) this.promptText.destroy();
-        if (this.playerIntroText) this.playerIntroText.destroy();
-
-        // Spawn del jugador.
+        // Spawn del jugador con el HP que traía de la sala anterior.
         this.player = createPlayer(this, 200, 750);
+        const store = useGameStore();
+        this.player.hp = store.hp;
         this.player.setDepth(this.player.y);
         this.player.play('knight_walk_anim', true);
 

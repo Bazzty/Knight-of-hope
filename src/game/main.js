@@ -10,6 +10,10 @@ const config = {
     width: 1280,
     height: 720,
     pixelArt: true,
+    scale: {
+        mode: Phaser.Scale.FIT,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+    },
     physics: {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }

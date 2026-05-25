@@ -77,7 +77,7 @@ export default class GameScene extends Phaser.Scene {
         // Define los límites del mundo físico. setCollideWorldBounds() en los sprites
         // los detiene al llegar a estos límites.
         // Amplía el mundo hacia la derecha para dar más espacio de movimiento.
-        this.physics.world.setBounds(0, 0, width + 140, height);
+        this.physics.world.setBounds(0, 0, width + 280, height);
 
         // ── ANIMACIONES ───────────────────────────────────────────────────────────────
         // Las animaciones se definen globalmente en la escena y se reutilizan por clave.
@@ -233,7 +233,7 @@ export default class GameScene extends Phaser.Scene {
                 // Creamos únicamente un trigger INVISIBLE en la posición aproximada
                 // de la puerta del fondo. Cuando el jugador se pare sobre él, pasamos a Scenario2.
                 // Ajusta `xDoor`/`yDoor` o el tamaño si la posición no coincide exactamente.
-                const xDoor = width + 230; // posición relativa en pantalla (ajustable)
+                const xDoor = width + 80; // posición relativa en pantalla (ajustable)
                 const yDoor = height / 2 + 10;
                 this.doorTrigger = this.add.rectangle(xDoor, yDoor, 220, 300).setOrigin(0.5).setDepth(199);
                 this.doorTrigger.visible = false;

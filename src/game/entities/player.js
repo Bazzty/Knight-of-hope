@@ -59,10 +59,14 @@ export default function createPlayer(scene, x, y) {
     // ── SISTEMA DE DAÑO ──────────────────────────────────────────────────────────────
     player.takeDamage = (amount) => {
         // Si ya está en iframes o ya murió, ignora el golpe.
-        if (player.isInvincible || player.hp <= 0) return;
+        if (player.isInvincible || player.hp <= 0) return false;
 
         // Math.max(0, ...) evita que la vida quede en negativo.
         player.hp = Math.max(0, player.hp - amount);
+
+        if (player.hp <= 0) {
+            return true;
+        }
 
         // Activa invencibilidad temporal para evitar daño en cadena.
         player.isInvincible = true;
@@ -80,6 +84,8 @@ export default function createPlayer(scene, x, y) {
                 player.isInvincible = false;
             }
         });
+
+        return false;
     };
 
     // ── ANIMACIÓN: VOLVER A IDLE ──────────────────────────────────────────────────────

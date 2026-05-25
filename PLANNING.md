@@ -58,7 +58,7 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 
 ---
 
-## Semana 3 — Sistema de habitaciones y mejoras 
+## Semana 3 — Sistema de habitaciones y mejoras (18 mayo – 25 mayo)
 
 ### Tareas planificadas
 - [x] Sistema de habitaciones: al limpiar una, se genera la siguiente
@@ -66,13 +66,21 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 - [x] 1-2 tipos de enemigos distintos con diferente comportamiento
 - [ ] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
 - [ ] Aplicar las mejoras al caballero (daño, vida, velocidad)
-- [ ] Pantalla de Game Over y reinicio
+- [x] Pantalla de Game Over y reinicio
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- Scenario2 con enemigo slime (comportamiento y sprites distintos al caballero enemigo)
+- Transición Sala 1 → Sala 2 mediante door trigger al eliminar al enemigo
+- Menú principal (HomeView) con fondo pixel art, botones PLAY / CONFIGURATIONS / QUIT y fuente Press Start 2P
+- HP persistente entre escenas mediante Pinia store (`gameState`)
+- Canvas de Phaser escalado al tamaño de la ventana con `Scale.FIT`
+- Scenario2 arranca directamente sin pantalla de introducción
+- Fix: `gameOver` se resetea correctamente en cada restart evitando sprites congelados
+- Animación de muerte del caballero y pantalla de Game Over con retry en ambas salas
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+- Transición animada entre habitaciones: se optó por cambio directo de escena para priorizar estabilidad
+- Pantalla de mejoras y sistema de upgrades: fuera del alcance para esta semana, pendiente
 
 ---
 

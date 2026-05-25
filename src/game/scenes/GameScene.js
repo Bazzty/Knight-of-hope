@@ -14,11 +14,16 @@ export default class GameScene extends Phaser.Scene {
         this.wasd = null;          // Teclas WASD
         this.attackKey = null;     // Tecla SPACE
         this.enemigo = null;
+        this.door = null;
+        this.doorOverlap = null;
+        this.doorTrigger = null;
         this.enemigoAttackHitbox = null;
         this.enemigoHpBarBg = null;   // Fondo gris de la barra de vida del enemigo
         this.enemigoHpBarFill = null; // Relleno rojo que se encoge al recibir daño
         this.hpText = null;
         this.gameOver = false;
+        this.gameOverText = null;
+        this.continueText = null;
     }
 
     // ── PRELOAD ───────────────────────────────────────────────────────────────────────
@@ -39,6 +44,10 @@ export default class GameScene extends Phaser.Scene {
             frameHeight: 69
         });
         this.load.spritesheet('knight_attack', 'assets/Ataquefinal.png', {
+            frameWidth: 69,
+            frameHeight: 69
+        });
+        this.load.spritesheet('knight_death', 'assets/muerteCaballero.png', {
             frameWidth: 69,
             frameHeight: 69
         });
@@ -67,7 +76,8 @@ export default class GameScene extends Phaser.Scene {
 
         // Define los límites del mundo físico. setCollideWorldBounds() en los sprites
         // los detiene al llegar a estos límites.
-        this.physics.world.setBounds(0, 0, width, height);
+        // Amplía el mundo hacia la derecha para dar más espacio de movimiento.
+        this.physics.world.setBounds(0, 0, width + 280, height);
 
         // ── ANIMACIONES ───────────────────────────────────────────────────────────────
         // Las animaciones se definen globalmente en la escena y se reutilizan por clave.
@@ -108,6 +118,15 @@ export default class GameScene extends Phaser.Scene {
                 frames: this.anims.generateFrameNumbers('knight_attack', { start: 0, end: 11 }),
                 frameRate: 18, // Más rápido que caminar para que el ataque se sienta snappy.
                 repeat: 0      // Sin loop: la animación se reproduce una sola vez.
+            });
+        }
+
+        if (!this.anims.exists('knight_death_anim')) {
+            this.anims.create({
+                key: 'knight_death_anim',
+                frames: this.anims.generateFrameNumbers('knight_death', { start: 0, end: 7 }),
+                frameRate: 8,
+                repeat: 0
             });
         }
 
@@ -154,7 +173,7 @@ export default class GameScene extends Phaser.Scene {
         // setOrigin(0, 0) hace que x/y sea la esquina superior izquierda, no el centro.
         // Así al reducir el width, encoge hacia la derecha (efecto de barra de vida).
         // setDepth() controla el orden de dibujado: mayor número = se dibuja encima.
-        this.enemigoHpBarBg   = this.add.rectangle(barX, barY, barWidth, barHeight, 0x333333).setOrigin(0, 0).setDepth(200);
+        this.enemigoHpBarBg = this.add.rectangle(barX, barY, barWidth, barHeight, 0x333333).setOrigin(0, 0).setDepth(200);
         this.enemigoHpBarFill = this.add.rectangle(barX, barY, barWidth, barHeight, 0xee4444).setOrigin(0, 0).setDepth(201);
 
         // ── HITBOX DE ATAQUE DEL ENEMIGO ──────────────────────────────────────────────
@@ -195,28 +214,79 @@ export default class GameScene extends Phaser.Scene {
                 this.enemigoHpBarFill = null;
                 this.enemigo.destroy();
                 this.enemigo = null;
+
+                // ── CAMBIO DE ESCENA ───────────────────────────────────────────────────────
+                // Mostrar texto de victoria
+                const roomText = this.add.text(width / 2, height / 3.5, 'ROOM CLEARED!', {
+                    fontSize: '60px',
+                    color: '#f31313',
+                    stroke: '#000000',
+                    strokeThickness: 6
+                }).setOrigin(0.5).setDepth(300);
+
+                // Mantener el texto visible 3 segundos
+                this.time.delayedCall(3000, () => {
+                    if (roomText && roomText.destroy) roomText.destroy();
+                });
+
+                // Usar la puerta que ya está dibujada en la imagen `dungeon.png`.
+                // Creamos únicamente un trigger INVISIBLE en la posición aproximada
+                // de la puerta del fondo. Cuando el jugador se pare sobre él, pasamos a Scenario2.
+                // Ajusta `xDoor`/`yDoor` o el tamaño si la posición no coincide exactamente.
+                const xDoor = width + 80; // posición relativa en pantalla (ajustable)
+                const yDoor = height / 2 + 10;
+                this.doorTrigger = this.add.rectangle(xDoor, yDoor, 220, 300).setOrigin(0.5).setDepth(199);
+                this.doorTrigger.visible = false;
+                this.physics.add.existing(this.doorTrigger, true);
+
+                // Overlap que activa la transición cuando el jugador está sobre la puerta dibujada.
+                this.doorOverlap = this.physics.add.overlap(this.player, this.doorTrigger, () => {
+                    if (this.doorOverlap) {
+                        try { this.doorOverlap.destroy(); } catch (e) { }
+                        this.doorOverlap = null;
+                    }
+                    if (this.doorTrigger && this.doorTrigger.destroy) this.doorTrigger.destroy();
+                    this.scene.start('Scenario2');
+                }, null, this);
+
             }
         });
 
         // Hitbox del enemigo golpea al jugador.
         this.physics.add.overlap(this.enemigoAttackHitbox, this.player, () => {
-            this.player.takeDamage(1);
+            const playerDied = this.player.takeDamage(1);
             this.updateHpDisplay();
 
-            if (this.player.hp <= 0 && !this.gameOver) {
+            if (playerDied && !this.gameOver) {
                 this.gameOver = true;
-                // Muestra texto centrado en pantalla.
-                this.add.text(width / 2, height / 2, 'GAME OVER', {
-                    fontSize: '64px',
-                    color: '#ff0000',
-                    stroke: '#000000',
-                    strokeThickness: 6
-                }).setOrigin(0.5).setDepth(300);
+                this.player.setVelocity(0, 0);
+                this.player.anims.stop();
+                this.player.setTexture('knight_death');
+                this.player.setOrigin(0.5, 1);
+                this.player.setScale(4.5);
+                this.player.body.enable = false;
+                this.player.play('knight_death_anim');
 
-                // delayedCall(ms, fn) ejecuta la función después del tiempo indicado.
-                // Reinicia la escena completa (vuelve a llamar create()).
-                this.time.delayedCall(2000, () => this.scene.restart());
+                this.player.once('animationcomplete', (anim) => {
+                    if (anim.key !== 'knight_death_anim') return;
+
+                    this.gameOverText = this.add.text(width / 2, height / 2 - 24, 'GAME OVER', {
+                        fontSize: '64px',
+                        color: '#ff0000',
+                        stroke: '#000000',
+                        strokeThickness: 6
+                    }).setOrigin(0.5).setDepth(300);
+
+                    this.continueText = this.add.text(width / 2, height / 2 + 250, 'Press SPACE to retry', {
+                        fontSize: '26px',
+                        color: '#ffffff',
+                        stroke: '#000000',
+                        strokeThickness: 4
+                    }).setOrigin(0.5).setDepth(300);
+                });
             }
+
+
         });
 
         // ── HUD DEL JUGADOR ───────────────────────────────────────────────────────────
@@ -257,8 +327,15 @@ export default class GameScene extends Phaser.Scene {
     // Phaser llama a update() ~60 veces por segundo (cada frame).
     // Aquí va toda la lógica que cambia con el tiempo: input, IA, física.
     update() {
-        // Si algún objeto crítico no está listo o el juego terminó, no hacemos nada.
-        if (!this.player || !this.cursors || !this.wasd || this.gameOver) return;
+        // Si algún objeto crítico no está listo, no hacemos nada.
+        if (!this.player || !this.cursors || !this.wasd) return;
+
+        if (this.gameOver) {
+            if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+                this.scene.restart();
+            }
+            return;
+        }
 
         // JustDown() devuelve true solo en el frame exacto en que se presionó la tecla,
         // no en cada frame que esté sostenida. Ideal para acciones de una sola vez.
@@ -268,10 +345,10 @@ export default class GameScene extends Phaser.Scene {
 
         // Pasa el estado actual de las teclas al método de movimiento del jugador.
         this.player.updateMovement({
-            left:  this.cursors.left.isDown  || this.wasd.A.isDown,
+            left: this.cursors.left.isDown || this.wasd.A.isDown,
             right: this.cursors.right.isDown || this.wasd.D.isDown,
-            up:    this.cursors.up.isDown    || this.wasd.W.isDown,
-            down:  this.cursors.down.isDown  || this.wasd.S.isDown
+            up: this.cursors.up.isDown || this.wasd.W.isDown,
+            down: this.cursors.down.isDown || this.wasd.S.isDown
         });
 
         // setDepth con el valor Y simula perspectiva top-down: quien está más abajo

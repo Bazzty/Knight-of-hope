@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 import createPlayer from '../entities/player';
 import { useGameStore } from '../../stores/gameState';
+import { setupFireFrames, spawnFireTorch } from '../utils/fireEffect';
+
+// Cada cuántas salas se muestra la pantalla de mejoras.
+const UPGRADE_EVERY = 1;
 
 // Scenario2 reutiliza la base de controles/combate de GameScene
 export default class Scenario2 extends Phaser.Scene {
@@ -22,8 +26,9 @@ export default class Scenario2 extends Phaser.Scene {
     // ── PRELOAD ───────────────────────────────────────────────────────────────────────
     // Carga assets del escenario, jugador y slime.
     preload() {
-        this.load.image('dungeon', 'assets/dungeon.png');
-        this.load.image('dungeon2', 'assets/Scenario2.png');
+        this.load.image('room2', 'assets/room2.png');
+        this.load.image('fire-orange', 'assets/fire-orange.png');
+        this.load.spritesheet('fire-blue', 'assets/fire-blue.png', { frameWidth: 192, frameHeight: 1024 });
         this.load.spritesheet('knight_walk', 'assets/movimientoFinal.png', {
             frameWidth: 69,
             frameHeight: 69
@@ -53,8 +58,20 @@ export default class Scenario2 extends Phaser.Scene {
         this.continueText = null;
 
         // Fondo del cuarto y límites físicos del mundo.
-        this.add.image(width / 2, height / 2, 'dungeon2').setDisplaySize(width, height);
+        this.add.image(width / 2, height / 2, 'room2').setDisplaySize(width, height);
         this.physics.world.setBounds(0, 0, width + 140, height);
+
+        setupFireFrames(this, 'fire-orange', [124, 341, 564, 783, 1001, 1215, 1436, 1657], 110, 887);
+        spawnFireTorch(this, 280, 280, 'fire-orange', 0.22, 0);
+
+        if (!this.anims.exists('fire-blue-anim')) {
+            this.anims.create({ key: 'fire-blue-anim', frames: this.anims.generateFrameNumbers('fire-blue', { start: 0, end: 7 }), frameRate: 10, repeat: -1 });
+        }
+        this.add.sprite(1000, 290, 'fire-blue')
+            .setScale(0.4)
+            .setBlendMode(Phaser.BlendModes.ADD)
+            .setDepth(10)
+            .play('fire-blue-anim');
 
         // Animaciones del caballero.
         if (!this.anims.exists('knight_walk_anim')) {
@@ -233,9 +250,13 @@ export default class Scenario2 extends Phaser.Scene {
 
     // Crea jugador, slime y overlaps de combate.
     startScenario() {
-        // Spawn del jugador con el HP que traía de la sala anterior.
-        this.player = createPlayer(this, 200, 750);
+        // Spawn del jugador con stats del store (HP, daño y velocidad heredados de sala anterior).
         const store = useGameStore();
+        this.player = createPlayer(this, 200, 750, {
+            speed: store.playerSpeed,
+            damage: store.playerDamage,
+            maxHp: store.maxHp,
+        });
         this.player.hp = store.hp;
         this.player.setDepth(this.player.y);
         this.player.play('knight_walk_anim', true);
@@ -270,7 +291,7 @@ export default class Scenario2 extends Phaser.Scene {
             if (this.player.attackHasHit || !this.slime || !this.slime.active) return;
 
             this.player.attackHasHit = true;
-            this.slime.hp -= 1;
+            this.slime.hp -= this.player.damage;
 
             if (this.slime.hp <= 0) {
                 // Secuencia de muerte del slime.
@@ -288,6 +309,7 @@ export default class Scenario2 extends Phaser.Scene {
                     if (anim.key !== 'slime_death_anim') return;
                     if (this.slime && this.slime.destroy) this.slime.destroy();
                     this.slime = null;
+                    this.onRoomCleared();
                 });
             }
         });
@@ -333,5 +355,59 @@ export default class Scenario2 extends Phaser.Scene {
                 this.player.anims.pause();
             }
         });
+    }
+
+    // Se llama cuando todos los enemigos de la sala están eliminados.
+    onRoomCleared() {
+        const store = useGameStore();
+        store.setHp(this.player.hp);
+        store.incrementRoom();
+
+        const { width, height } = this.scale;
+        const roomText = this.add.text(width / 2, height / 3.5, 'ROOM CLEARED!', {
+            fontSize: '60px',
+            color: '#f31313',
+            stroke: '#000000',
+            strokeThickness: 6
+        }).setOrigin(0.5).setDepth(300);
+
+        this.time.delayedCall(2000, () => {
+            if (roomText && roomText.destroy) roomText.destroy();
+
+            if (store.roomCount % UPGRADE_EVERY === 0) {
+                this.scene.pause();
+                this.scene.launch('UpgradeScene', { callerScene: 'Scenario2' });
+                this.events.once('upgrade-chosen', () => {
+                    this.player.hp = store.hp;
+                    this.player.maxHp = store.maxHp;
+                    this.player.speed = store.playerSpeed;
+                    this.player.damage = store.playerDamage;
+                    this.updateHpDisplay();
+                    this.showDoorTrigger();
+                });
+            } else {
+                this.showDoorTrigger();
+            }
+        });
+    }
+
+    // Trigger de puerta invisible para pasar a la siguiente sala.
+    showDoorTrigger() {
+        const { width, height } = this.scale;
+        const xDoor = width + 80;
+        const yDoor = height / 2 + 10;
+        const doorTrigger = this.add.rectangle(xDoor, yDoor, 220, 300).setOrigin(0.5).setDepth(199);
+        doorTrigger.visible = false;
+        this.physics.add.existing(doorTrigger, true);
+
+        let doorOverlap = this.physics.add.overlap(this.player, doorTrigger, () => {
+            if (doorOverlap) {
+                try { doorOverlap.destroy(); } catch (e) { }
+                doorOverlap = null;
+            }
+            if (doorTrigger && doorTrigger.destroy) doorTrigger.destroy();
+            useGameStore().setHp(this.player.hp);
+            this.scene.start('Scenario3');
+        }, null, this);
     }
 }

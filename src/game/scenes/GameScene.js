@@ -1,6 +1,10 @@
 import Phaser from 'phaser';
 import createPlayer from '../entities/player';
 import { useGameStore } from '../../stores/gameState';
+import { setupFireFrames, spawnFireTorch } from '../utils/fireEffect';
+
+// Cada cuántas salas se muestra la pantalla de mejoras.
+const UPGRADE_EVERY = 1;
 
 // GameScene es la escena principal del juego. Extiende Phaser.Scene para tener acceso
 // a todos los sistemas de Phaser (física, animaciones, input, etc.).
@@ -32,14 +36,11 @@ export default class GameScene extends Phaser.Scene {
     // Los assets en /public/assets/ se cargan por URL relativa.
     preload() {
         // Imagen estática para el fondo de la mazmorra.
-        this.load.image('dungeon', 'assets/dungeon.png');
+        this.load.image('room1', 'assets/room1.png');
 
         // Spritesheets: imágenes con múltiples frames del mismo tamaño.
         // frameWidth/frameHeight indica el tamaño de cada frame individual.
-        this.load.spritesheet('torch', 'assets/torch.png', {
-            frameWidth: 64,
-            frameHeight: 64,
-        });
+        this.load.image('fire-orange', 'assets/fire-orange.png');
         this.load.spritesheet('knight_walk', 'assets/movimientoFinal.png', {
             frameWidth: 69,
             frameHeight: 69
@@ -71,13 +72,13 @@ export default class GameScene extends Phaser.Scene {
         // Resetear gameOver al reiniciar la escena.
         this.gameOver = false;
 
-        // Sala 1 siempre arranca con HP completo.
+        // Sala 1 siempre arranca con stats completos (nueva partida o retry).
         this.store = useGameStore();
         this.store.reset();
 
         // ── ESCENARIO ─────────────────────────────────────────────────────────────────
         // Fondo centrado y estirado al tamaño de la pantalla.
-        this.add.image(width / 2, height / 2, 'dungeon').setDisplaySize(width, height);
+        this.add.image(width / 2, height / 2, 'room1').setDisplaySize(width, height);
 
         // Define los límites del mundo físico. setCollideWorldBounds() en los sprites
         // los detiene al llegar a estos límites.
@@ -87,23 +88,11 @@ export default class GameScene extends Phaser.Scene {
         // ── ANIMACIONES ───────────────────────────────────────────────────────────────
         // Las animaciones se definen globalmente en la escena y se reutilizan por clave.
 
-        // Antorcha: frames 0 al 24, 10 fps, loop infinito (repeat: -1).
-        this.anims.create({
-            key: 'torch-flicker',
-            frames: this.anims.generateFrameNumbers('torch', { start: 0, end: 24 }),
-            frameRate: 10,
-            repeat: -1
-        });
-
-        const torchPositions = [
-            { x: 540, y: 320 },
-            { x: 800, y: 320 },
-        ];
-
-        torchPositions.forEach(({ x, y }, index) => {
-            const sprite = this.add.sprite(x, y, 'torch').setScale(1.5).play('torch-flicker');
-            // La segunda antorcha se espeja para que parezca distinta.
-            if (index === 1) sprite.setFlipX(true);
+        // Centros X detectados por análisis de píxeles — cada frame centra su llama.
+        // Centros detectados por análisis de píxeles en la imagen 1774x887.
+        setupFireFrames(this, 'fire-orange', [124, 341, 564, 783, 1001, 1215, 1436, 1657], 110, 887);
+        [{ x: 295, y: 290 }, { x: 975, y: 290 }].forEach(({ x, y }, i) => {
+            spawnFireTorch(this, x, y, 'fire-orange', 0.22, i * 4);
         });
 
         // El guard !this.anims.exists() evita un error si la escena se reinicia:
@@ -156,7 +145,11 @@ export default class GameScene extends Phaser.Scene {
         // ── JUGADOR ───────────────────────────────────────────────────────────────────
         // createPlayer() es una factory function en entities/player.js que devuelve
         // el sprite configurado con física, animaciones y métodos de combate.
-        this.player = createPlayer(this, 200, 750);
+        this.player = createPlayer(this, 200, 750, {
+            speed: this.store.playerSpeed,
+            damage: this.store.playerDamage,
+            maxHp: this.store.maxHp,
+        });
 
         // ── ENEMIGO ───────────────────────────────────────────────────────────────────
         this.enemigo = this.physics.add.sprite(1100, 480, 'enemigo');
@@ -206,7 +199,7 @@ export default class GameScene extends Phaser.Scene {
             // attackHasHit evita que un mismo swing dañe más de una vez.
             if (this.player.attackHasHit || !this.enemigo || !this.enemigo.active) return;
             this.player.attackHasHit = true;
-            this.enemigo.hp -= 1;
+            this.enemigo.hp -= this.player.damage;
             this.updateEnemigoHpBar();
 
             if (this.enemigo.hp <= 0) {
@@ -220,8 +213,9 @@ export default class GameScene extends Phaser.Scene {
                 this.enemigo.destroy();
                 this.enemigo = null;
 
-                // ── CAMBIO DE ESCENA ───────────────────────────────────────────────────────
-                // Mostrar texto de victoria
+                this.store.incrementRoom();
+
+                // Mostrar texto de sala completada por 2 segundos, luego mejora o puerta.
                 const roomText = this.add.text(width / 2, height / 3.5, 'ROOM CLEARED!', {
                     fontSize: '60px',
                     color: '#f31313',
@@ -229,32 +223,26 @@ export default class GameScene extends Phaser.Scene {
                     strokeThickness: 6
                 }).setOrigin(0.5).setDepth(300);
 
-                // Mantener el texto visible 3 segundos
-                this.time.delayedCall(3000, () => {
+                this.time.delayedCall(2000, () => {
                     if (roomText && roomText.destroy) roomText.destroy();
-                });
 
-                // Usar la puerta que ya está dibujada en la imagen `dungeon.png`.
-                // Creamos únicamente un trigger INVISIBLE en la posición aproximada
-                // de la puerta del fondo. Cuando el jugador se pare sobre él, pasamos a Scenario2.
-                // Ajusta `xDoor`/`yDoor` o el tamaño si la posición no coincide exactamente.
-                const xDoor = width + 80; // posición relativa en pantalla (ajustable)
-                const yDoor = height / 2 + 10;
-                this.doorTrigger = this.add.rectangle(xDoor, yDoor, 220, 300).setOrigin(0.5).setDepth(199);
-                this.doorTrigger.visible = false;
-                this.physics.add.existing(this.doorTrigger, true);
-
-                // Overlap que activa la transición cuando el jugador está sobre la puerta dibujada.
-                this.doorOverlap = this.physics.add.overlap(this.player, this.doorTrigger, () => {
-                    if (this.doorOverlap) {
-                        try { this.doorOverlap.destroy(); } catch (e) { }
-                        this.doorOverlap = null;
+                    if (this.store.roomCount % UPGRADE_EVERY === 0) {
+                        // Pausa esta escena y lanza la pantalla de mejoras encima.
+                        this.scene.pause();
+                        this.scene.launch('UpgradeScene', { callerScene: 'GameScene' });
+                        // Al elegir la mejora, sincroniza los stats del jugador y muestra la puerta.
+                        this.events.once('upgrade-chosen', () => {
+                            this.player.hp = this.store.hp;
+                            this.player.maxHp = this.store.maxHp;
+                            this.player.speed = this.store.playerSpeed;
+                            this.player.damage = this.store.playerDamage;
+                            this.updateHpDisplay();
+                            this.showDoorTrigger();
+                        });
+                    } else {
+                        this.showDoorTrigger();
                     }
-                    if (this.doorTrigger && this.doorTrigger.destroy) this.doorTrigger.destroy();
-                    this.store.setHp(this.player.hp);
-                    this.scene.start('Scenario2');
-                }, null, this);
-
+                });
             }
         });
 
@@ -316,6 +304,26 @@ export default class GameScene extends Phaser.Scene {
     }
 
     // ── HELPERS ───────────────────────────────────────────────────────────────────────
+
+    // Crea el trigger invisible de la puerta para pasar a Scenario2.
+    showDoorTrigger() {
+        const { width, height } = this.scale;
+        const xDoor = width + 80;
+        const yDoor = height / 2 + 10;
+        this.doorTrigger = this.add.rectangle(xDoor, yDoor, 220, 300).setOrigin(0.5).setDepth(199);
+        this.doorTrigger.visible = false;
+        this.physics.add.existing(this.doorTrigger, true);
+
+        this.doorOverlap = this.physics.add.overlap(this.player, this.doorTrigger, () => {
+            if (this.doorOverlap) {
+                try { this.doorOverlap.destroy(); } catch (e) { }
+                this.doorOverlap = null;
+            }
+            if (this.doorTrigger && this.doorTrigger.destroy) this.doorTrigger.destroy();
+            this.store.setHp(this.player.hp);
+            this.scene.start('Scenario2');
+        }, null, this);
+    }
 
     // Actualiza el texto de HP del jugador en el HUD.
     updateHpDisplay() {

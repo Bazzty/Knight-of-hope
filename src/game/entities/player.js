@@ -1,6 +1,7 @@
 // Factory function que crea y configura el sprite del jugador con física, animaciones y combate.
 // Recibe la escena de Phaser, y las coordenadas x/y donde aparece el jugador.
-export default function createPlayer(scene, x, y) {
+// config: { speed, damage, maxHp } — todos opcionales, usan defaults si no se pasan.
+export default function createPlayer(scene, x, y, config = {}) {
 
     // Crea un sprite con física arcade en la posición indicada.
     // 'knight_walk' es la clave del spritesheet cargado en preload(), y 0 es el frame inicial.
@@ -24,15 +25,18 @@ export default function createPlayer(scene, x, y) {
     // Impide que el jugador salga de los límites definidos con physics.world.setBounds().
     player.setCollideWorldBounds(true);
 
-    // Velocidad de movimiento en píxeles por segundo.
-    player.speed = 150;
+    // Velocidad de movimiento en píxeles por segundo. Puede venir del store (upgrade velocidad).
+    player.speed = config.speed ?? 150;
+
+    // Daño por ataque. Puede venir del store (upgrade ataque).
+    player.damage = config.damage ?? 1;
 
     // Estado de ataque: mientras es true el jugador no puede moverse ni atacar de nuevo.
     player.isAttacking = false;
 
-    // Sistema de vida del jugador.
-    player.maxHp = 10;
-    player.hp = 10;
+    // Sistema de vida del jugador. maxHp puede venir del store (upgrade salud).
+    player.maxHp = config.maxHp ?? 10;
+    player.hp = config.maxHp ?? 10;
 
     // Bandera de invencibilidad: evita recibir daño múltiple en el mismo momento (iframes).
     player.isInvincible = false;

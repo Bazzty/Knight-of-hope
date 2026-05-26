@@ -1,7 +1,9 @@
 import Phaser from 'phaser';
 import GameScene from './scenes/GameScene';
 import Scenario2 from './scenes/Scenario2';
-
+import Scenario3 from './scenes/Scenario3';
+import ScenarioBoss from './scenes/ScenarioBoss';
+import UpgradeScene from './scenes/UpgradeScene';
 let gameInstance = null;
 
 const config = {
@@ -18,18 +20,18 @@ const config = {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }
     },
-    scene: [GameScene, Scenario2]
+    scene: [GameScene, Scenario2, Scenario3, ScenarioBoss, UpgradeScene]
 };
 
-export const initGame = () => {  // Asegura que solo haya una instancia del juego
+export const initGame = () => {
     if (gameInstance) {
         gameInstance.destroy(true);
     }
 
-    gameInstance = new Phaser.Game(config); // Crea una nueva instancia del juego
+    gameInstance = new Phaser.Game(config);
 
     if (typeof window !== 'undefined') {
-        window.__KOH_GAME = gameInstance;  // Guarda la instancia del juego en una variable global para facilitar su acceso desde otros módulos
+        window.__KOH_GAME = gameInstance;
     }
 
     return gameInstance;

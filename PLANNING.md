@@ -64,8 +64,8 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 - [x] Sistema de habitaciones: al limpiar una, se genera la siguiente
 - [ ] Transición entre habitaciones (animación o fade)
 - [x] 1-2 tipos de enemigos distintos con diferente comportamiento
-- [ ] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
-- [ ] Aplicar las mejoras al caballero (daño, vida, velocidad)
+- [x] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
+- [x] Aplicar las mejoras al caballero (daño, vida, velocidad)
 - [x] Pantalla de Game Over y reinicio
 
 ### Lo que se logró completar

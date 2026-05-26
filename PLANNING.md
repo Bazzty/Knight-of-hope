@@ -80,7 +80,6 @@ No se instaló phaser 3, por temas de actualización, aunque no interviene con l
 
 ### Lo que no se logró y el motivo
 - Transición animada entre habitaciones: se optó por cambio directo de escena para priorizar estabilidad
-- Pantalla de mejoras y sistema de upgrades: fuera del alcance para esta semana, pendiente
 
 ---
 

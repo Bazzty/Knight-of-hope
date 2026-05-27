@@ -13,10 +13,10 @@ export default class ScenarioBoss extends DungeonScene {
     }
 
     preloadScene() {
-        this.load.image('throne', 'assets/throne.png');
-        this.load.image('fire-orange', 'assets/fire-orange.png');
-        this.load.spritesheet('enemigo', 'assets/enemigo.png', { frameWidth: 69, frameHeight: 69 });
-        this.load.spritesheet('enemigo_attack', 'assets/ataqueEnemigo.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.image('throne', 'assets/backgrounds/throne.png');
+        this.load.image('fire-orange', 'assets/effects/fire-orange.png');
+        this.load.spritesheet('enemigo', 'assets/enemies/enemigo.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.spritesheet('enemigo_attack', 'assets/enemies/ataqueEnemigo.png', { frameWidth: 69, frameHeight: 69 });
     }
 
     createScene() {

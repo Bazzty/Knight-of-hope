@@ -26,9 +26,9 @@ export default class DungeonScene extends Phaser.Scene {
     // Carga los spritesheets del knight que se usan en TODAS las salas.
     // Llama a preloadScene() para que cada hija cargue sus assets propios.
     preload() {
-        this.load.spritesheet('knight_walk', 'assets/movimientoFinal.png', { frameWidth: 69, frameHeight: 69 });
-        this.load.spritesheet('knight_attack', 'assets/Ataquefinal.png', { frameWidth: 69, frameHeight: 69 });
-        this.load.spritesheet('knight_death', 'assets/muerteCaballero.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.spritesheet('knight_walk', 'assets/player/movimientoFinal.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.spritesheet('knight_attack', 'assets/player/Ataquefinal.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.spritesheet('knight_death', 'assets/player/muerteCaballero.png', { frameWidth: 69, frameHeight: 69 });
         this.preloadScene();
     }
 

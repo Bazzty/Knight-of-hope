@@ -26,7 +26,7 @@ export default class UpgradeScene extends Phaser.Scene {
     preload() {
         UPGRADE_DEFS.forEach(({ key }) => {
             if (!this.textures.exists(key)) {
-                this.load.image(key, `assets/${key}.png`);
+                this.load.image(key, `assets/ui/${key}.png`);
             }
         });
     }

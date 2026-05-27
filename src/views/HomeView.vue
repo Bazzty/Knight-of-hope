@@ -37,7 +37,7 @@ function mostrarProximamente() {
 .home {
   width: 100vw;
   height: 100vh;
-  background-image: url('/assets/HomeView.jpg');
+  background-image: url('/assets/backgrounds/HomeView.jpg');
   background-size: cover;
   background-position: center;
   image-rendering: pixelated;

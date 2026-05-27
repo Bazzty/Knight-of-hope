@@ -13,10 +13,10 @@ export default class Scenario2 extends DungeonScene {
     }
 
     preloadScene() {
-        this.load.image('room2', 'assets/room2.png');
-        this.load.image('fire-orange', 'assets/fire-orange.png');
-        this.load.spritesheet('fire-blue', 'assets/fire-blue.png', { frameWidth: 192, frameHeight: 1024 });
-        this.load.spritesheet('slime', 'assets/slime-Sheet.png', { frameWidth: 32, frameHeight: 25 });
+        this.load.image('room2', 'assets/backgrounds/room2.png');
+        this.load.image('fire-orange', 'assets/effects/fire-orange.png');
+        this.load.spritesheet('fire-blue', 'assets/effects/fire-blue.png', { frameWidth: 192, frameHeight: 1024 });
+        this.load.spritesheet('slime', 'assets/enemies/slime-Sheet.png', { frameWidth: 32, frameHeight: 25 });
     }
 
     createScene() {

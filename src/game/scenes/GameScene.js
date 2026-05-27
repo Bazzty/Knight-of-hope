@@ -14,10 +14,10 @@ export default class GameScene extends DungeonScene {
 
     // Carga los assets únicos de sala 1 (fondo, antorcha, sprites del caballero enemigo).
     preloadScene() {
-        this.load.image('room1', 'assets/room1.png');
-        this.load.image('fire-orange', 'assets/fire-orange.png');
-        this.load.spritesheet('enemigo', 'assets/enemigo.png', { frameWidth: 69, frameHeight: 69 });
-        this.load.spritesheet('enemigo_attack', 'assets/ataqueEnemigo.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.image('room1', 'assets/backgrounds/room1.png');
+        this.load.image('fire-orange', 'assets/effects/fire-orange.png');
+        this.load.spritesheet('enemigo', 'assets/enemies/enemigo.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.spritesheet('enemigo_attack', 'assets/enemies/ataqueEnemigo.png', { frameWidth: 69, frameHeight: 69 });
     }
 
     // Construye la sala: fondo, antorchas, enemigo, overlaps de combate.

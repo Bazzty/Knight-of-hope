@@ -11,8 +11,8 @@ export default class Scenario3 extends DungeonScene {
     }
 
     preloadScene() {
-        this.load.image('room3', 'assets/room3.png');
-        this.load.spritesheet('slime', 'assets/slime-Sheet.png', { frameWidth: 32, frameHeight: 25 });
+        this.load.image('room3', 'assets/backgrounds/room3.png');
+        this.load.spritesheet('slime', 'assets/enemies/slime-Sheet.png', { frameWidth: 32, frameHeight: 25 });
     }
 
     createScene() {

@@ -87,15 +87,26 @@
 
 ### Tareas planificadas
 - [ ] Docker: crear `Dockerfile` y probar localmente
-- [ ] GitHub Actions: configurar CI/CD completo
-- [ ] Escribir pruebas unitarias (mínimo 5-10 tests)
+- [x] GitHub Actions: configurar CI/CD completo
+- [x] Escribir pruebas unitarias (mínimo 5-10 tests)
 - [ ] Crear cuenta en DockerHub y subir la imagen
 - [ ] Completar `README.md`
 - [ ] Pruebas finales en Chrome, Firefox y Safari
 - [ ] Pulir arte, sonidos, balance del juego
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- `DungeonScene.js` como clase base para todas las salas de combate — elimina ~70% de código duplicado entre escenas (GameScene, Scenario2, Scenario3, ScenarioBoss ahora heredan de ella)
+- Corregido bug en `player.js`: el HP persistido desde Pinia ahora se respeta correctamente al crear el jugador
+- Corregido bug en `GameScene.js`: `store.reset()` ya no sobreescribe el HP al cambiar de sala
+- Scenario3 y ScenarioBoss migrados al sistema de herencia de DungeonScene
+- Barra de HP visual añadida al slime en Sala 2 y Sala 3 (faltaba)
+- GitHub Actions CI configurado (`.github/workflows/ci.yml`): corre tests y build en cada push/PR a `main` y `develop`
+- 11 tests unitarios con Vitest: 7 del store (`gameState.spec.js`) y 4 de HomeView (`HomeView.spec.js`)
+- Assets reorganizados en subcarpetas (`backgrounds/`, `player/`, `enemies/`, `effects/`, `ui/`)
+- Eliminados assets sin usar: `dungeon.png`, `Scenario2.png`, `knight.png`, `room4.png`, `torch.png`, `hero.png`
+- Eliminados archivos muertos: `remove_bg.js`, `save_image.js`, `style.css`, `App.spec.js`, carpeta `components/`
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+- Docker y DockerHub: pendiente (a cargo de Ignacio Ovalle)
+- README.md: pendiente de redactar
+- Pruebas finales en navegadores: pendiente

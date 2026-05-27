@@ -25,7 +25,7 @@
 - Se configuraron Vue Router (`/` → HomeView, `/game` → GameView) y Pinia
 
 ### Lo que no se logró y el motivo
-No se instaló phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
+- No se instaló phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
 
 ---
 

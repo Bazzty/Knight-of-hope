@@ -36,7 +36,7 @@ export default function createPlayer(scene, x, y, config = {}) {
 
     // Sistema de vida del jugador. maxHp puede venir del store (upgrade salud).
     player.maxHp = config.maxHp ?? 10;
-    player.hp = config.maxHp ?? 10;
+    player.hp = config.hp ?? config.maxHp ?? 10;
 
     // Bandera de invencibilidad: evita recibir daño múltiple en el mismo momento (iframes).
     player.isInvincible = false;

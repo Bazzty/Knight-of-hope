@@ -86,13 +86,13 @@
 ## Semana 4 — Pulido y entrega 
 
 ### Tareas planificadas
-- [ ] Docker: crear `Dockerfile` y probar localmente
+- [x] Docker: crear `Dockerfile` y probar localmente
 - [x] GitHub Actions: configurar CI/CD completo
 - [x] Escribir pruebas unitarias (mínimo 5-10 tests)
-- [ ] Crear cuenta en DockerHub y subir la imagen
-- [ ] Completar `README.md`
+- [x] Crear cuenta en DockerHub y subir la imagen
+- [x] Completar `README.md`
 - [ ] Pruebas finales en Chrome, Firefox y Safari
-- [ ] Pulir arte, sonidos, balance del juego
+- [x] Pulir arte, sonidos, balance del juego
 
 ### Lo que se logró completar
 - `DungeonScene.js` como clase base para todas las salas de combate — elimina ~70% de código duplicado entre escenas (GameScene, Scenario2, Scenario3, ScenarioBoss ahora heredan de ella)
@@ -101,12 +101,15 @@
 - Scenario3 y ScenarioBoss migrados al sistema de herencia de DungeonScene
 - Barra de HP visual añadida al slime en Sala 2 y Sala 3 (faltaba)
 - GitHub Actions CI configurado (`.github/workflows/ci.yml`): corre tests y build en cada push/PR a `main` y `develop`
+- Job de Docker en CI: build y push automático a DockerHub en cada merge a `main`
 - 11 tests unitarios con Vitest: 7 del store (`gameState.spec.js`) y 4 de HomeView (`HomeView.spec.js`)
 - Assets reorganizados en subcarpetas (`backgrounds/`, `player/`, `enemies/`, `effects/`, `ui/`)
 - Eliminados assets sin usar: `dungeon.png`, `Scenario2.png`, `knight.png`, `room4.png`, `torch.png`, `hero.png`
 - Eliminados archivos muertos: `remove_bg.js`, `save_image.js`, `style.css`, `App.spec.js`, carpeta `components/`
+- `Dockerfile` multi-etapa (Node 22 + nginx), `docker-compose.yml` y `.dockerignore` configurados
+- Imagen subida a DockerHub (`bazzty/knight-of-hope`)
+- `README.md` completo con instrucciones de desarrollo, Docker y CI/CD
+- Música y efectos de sonido agregados al juego
 
 ### Lo que no se logró y el motivo
-- Docker y DockerHub: pendiente (a cargo de Ignacio Ovalle)
-- README.md: pendiente de redactar
 - Pruebas finales en navegadores: pendiente

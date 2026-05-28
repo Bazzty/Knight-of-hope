@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
@@ -16,6 +16,29 @@ function makeRouter() {
 }
 
 describe('HomeView', () => {
+
+    // Mockeamos `Audio` para que devuelva Promesas resueltas y no bloquee los tests.
+    let _RealAudio
+    beforeEach(() => {
+        _RealAudio = global.Audio
+        global.Audio = class {
+            constructor() {
+                this.paused = true
+                this.currentTime = 0
+                this.loop = false
+                this.volume = 1
+                this.preload = 'auto'
+            }
+            canPlayType() { return 'probably' }
+            play() { this.paused = false; return Promise.resolve() }
+            pause() { this.paused = true }
+        }
+        vi.useFakeTimers()
+    })
+    afterEach(() => {
+        global.Audio = _RealAudio
+        try { vi.useRealTimers() } catch (e) { }
+    })
 
     // Verifica que el título del juego se renderiza correctamente.
     // Si alguien cambia el texto del h1, este test lo detecta.
@@ -50,9 +73,12 @@ describe('HomeView', () => {
         const wrapper = mount(HomeView, {
             global: { plugins: [router] }
         })
+        const pushSpy = vi.spyOn(router, 'push')
         await wrapper.find('button').trigger('click')
-        await flushPromises() // espera que la navegación asíncrona del router termine
-        expect(router.currentRoute.value.path).toBe('/game')
+        // avanzar el timer para ejecutar el setTimeout del componente
+        vi.advanceTimersByTime(200)
+        await flushPromises() // espera promesas internas
+        expect(pushSpy).toHaveBeenCalledWith('/game')
     })
 
     // Verifica que CONFIGURATIONS muestra el texto "PRÓXIMAMENTE"

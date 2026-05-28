@@ -1,11 +1,102 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const proximamenteVisible = ref(false)
 
-function play() {
+// Guardará la referencia a nuestro audio nativo
+let menuMusic = null
+// Efecto de sonido del botón
+let buttonSfx = null
+
+onMounted(() => {
+  // Determinamos qué extensión soporta mejor el navegador de forma nativa
+  const audioConfig = new Audio();
+  const ext = audioConfig.canPlayType('audio/ogg') ? 'ogg' : 'mp3';
+
+  // Instanciamos el audio usando la variable dinámica ext
+  menuMusic = new Audio(`/assets/audio/music/Menu.${ext}`)
+  menuMusic.loop = true    // Para que la canción vuelva a empezar al terminar
+  menuMusic.volume = 0.1  
+
+  // try/catch con Promesa porque los navegadores bloquean el sonido automático
+  menuMusic.play().catch(error => {
+    console.warn("Autoplay bloqueado hasta la interacción del usuario:", error)
+  })
+
+  // Instanciamos el sfx del botón con la misma extensión
+  buttonSfx = new Audio(`/assets/audio/music/sfx/buttom.${ext}`)
+  buttonSfx.preload = 'auto'
+  buttonSfx.volume = 0.6
+    // Fallback: en la primera interacción del usuario intentamos reproducir
+    // (sirve para navegadores que bloquean autoplay incluso tras carga)
+    const onFirstInteraction = async () => {
+      try {
+        if (menuMusic && menuMusic.paused) await menuMusic.play()
+      } catch (e) {
+        console.warn('Intento de reproducir menuMusic en interacción falló:', e)
+      }
+      try {
+        if (buttonSfx && buttonSfx.paused) await buttonSfx.play()
+        if (buttonSfx) buttonSfx.pause(); // no queremos dejarlo sonando aquí
+        if (buttonSfx) buttonSfx.currentTime = 0
+      } catch (e) {
+        // ignorar
+      }
+      // removemos el listener (usamos once pero limpiamos por si acaso)
+      window.removeEventListener('pointerdown', onFirstInteraction)
+    }
+    window.addEventListener('pointerdown', onFirstInteraction, { once: true })
+})
+
+// Cuando este componente muere (el usuario cambia de ruta hacia el juego)
+onUnmounted(() => {
+  if (menuMusic) {
+    menuMusic.pause()
+    menuMusic.currentTime = 0
+  }
+  if (buttonSfx) {
+    buttonSfx.pause()
+    buttonSfx.currentTime = 0
+  }
+})
+
+async function play() {
+  // Reproducir sfx al hacer clic (es interacción del usuario, suele permitirse)
+  if (buttonSfx) {
+    try {
+      // Intentamos arrancarlo; no await para evitar bloquear la navegación si play() no
+      // devuelve una Promesa en este entorno de test.
+      const playResult = buttonSfx.play && buttonSfx.play()
+      if (playResult && typeof playResult.catch === 'function') {
+        playResult.catch(e => console.warn('No se pudo reproducir el sfx del botón:', e))
+      }
+    } catch (e) {
+      console.warn('No se pudo reproducir el sfx del botón:', e)
+    }
+  }
+
+  // Intentar desbloquear el AudioContext del navegador antes de navegar al juego.
+  // Esto ayuda a que frameworks como Phaser inicien su audio tras la interacción del usuario.
+  try {
+    const isTest = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test')
+    if (!isTest && typeof window !== 'undefined') {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext
+      if (AudioCtx) {
+        try {
+          const ctx = new AudioCtx()
+          if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+            ctx.resume().catch(() => {})
+          }
+        } catch (e) { /* ignore */ }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // pequeña espera para que el click sound se perciba (ajustable)
+  await new Promise(r => setTimeout(r, 180))
+
   router.push('/game')
 }
 

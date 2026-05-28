@@ -17,63 +17,99 @@
 - [x] Integrar Phaser 3 y mostrar un canvas en blanco dentro de Vue
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- Se creó el repositorio en GitHub con la estructura base del proyecto
+- Se redactaron y subieron `DESIGN.md` y `PLANNING.md`
+- Se envió el correo al profesor con los nombres del equipo y el link al repositorio
+- Se configuró el proyecto con Vue 3 + Vite + pnpm + ESLint + Vitest
+- Se integró Phaser dentro de Vue y se logró mostrar el canvas en pantalla
+- Se configuraron Vue Router (`/` → HomeView, `/game` → GameView) y Pinia
 
 ### Lo que no se logró y el motivo
-No se instaló phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
+- No se instaló phaser 3, por temas de actualización, aunque no interviene con las necesidades del proyecto y phaser 3 es suficiente, optamos por investigar nuevas tecnologias y ver si realmente hay diferencias entre versiones
 
 ---
 
-## Semana 2 — Mecánicas base (11 de mayo – 17 de mayo)
+## Semana 2 — Mecánicas base 
 
 ### Tareas planificadas
-- [ ] Crear Vista de juego y modelos
-- [ ] Caballero en pantalla con movimiento (teclado)
-- [ ] Caballero con animación de caminar y atacar
-- [ ] Primera habitación con bordes (no salirse de los límites)
-- [ ] Un enemigo básico que persigue al caballero
-- [ ] Sistema de colisiones: el enemigo daña al caballero
-- [ ] El caballero puede atacar y eliminar al enemigo
+- [x] Crear Vista de juego y modelos
+- [x] Caballero en pantalla con movimiento (teclado)
+- [x] Caballero con animación de caminar y atacar
+- [x] Primera habitación con bordes (no salirse de los límites)
+- [x] Un enemigo básico que persigue al caballero
+- [x] Sistema de colisiones: el enemigo daña al caballero
+- [x] El caballero puede atacar y eliminar al enemigo
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- `GameView.vue` monta y destruye el canvas de Phaser correctamente (`initGame` / `destroyGame`) evitando memory leaks al navegar
+- Player (`createPlayer()`) con movimiento horizontal mediante flechas/WASD, ataque con SPACE y flip horizontal
+- Animaciones de caminar y atacar con spritesheets dedicados (`movimientoFinal.png`, `Ataquefinal.png`), frames 69×69
+- Escenario de mazmorra con fondo (`dungeon.png`) y antorchas animadas (`torch-flicker`, 25 frames a 10 fps)
+- Colisión con los bordes del mundo mediante `physics.world.setBounds`
+- Enemigo básico que persigue al jugador en el eje X y ataca con cooldown de 2.5 segundos
+- Sistema de combate con hitboxes invisibles usando `physics.add.overlap`
+- HP del jugador (10) con iframes tras recibir daño y efecto de parpadeo (~1 segundo)
+- HUD de vida del jugador en pantalla
+- HP del enemigo (3) con barra visual que lo sigue en cada frame
+- Game Over al morir el jugador → `scene.restart()`
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+> Se completaron todas las tareas planificadas para esta semana.
 
 ---
 
-## Semana 3 — Sistema de habitaciones y mejoras (18 de mayo– 24 de mayo)
+## Semana 3 — Sistema de habitaciones y mejoras (18 mayo – 25 mayo)
 
 ### Tareas planificadas
-- [ ] Sistema de habitaciones: al limpiar una, se genera la siguiente
+- [x] Sistema de habitaciones: al limpiar una, se genera la siguiente
 - [ ] Transición entre habitaciones (animación o fade)
-- [ ] 1-2 tipos de enemigos distintos con diferente comportamiento
-- [ ] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
-- [ ] Aplicar las mejoras al caballero (daño, vida, velocidad)
-- [ ] Pantalla de Game Over y reinicio
+- [x] 1-2 tipos de enemigos distintos con diferente comportamiento
+- [x] Pantalla de mejoras al limpiar habitación (3 opciones aleatorias)
+- [x] Aplicar las mejoras al caballero (daño, vida, velocidad)
+- [x] Pantalla de Game Over y reinicio
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- Scenario2 con enemigo slime (comportamiento y sprites distintos al caballero enemigo)
+- Transición Sala 1 → Sala 2 mediante door trigger al eliminar al enemigo
+- Menú principal (HomeView) con fondo pixel art, botones PLAY / CONFIGURATIONS / QUIT y fuente Press Start 2P
+- HP persistente entre escenas mediante Pinia store (`gameState`)
+- Canvas de Phaser escalado al tamaño de la ventana con `Scale.FIT`
+- Scenario2 arranca directamente sin pantalla de introducción
+- Fix: `gameOver` se resetea correctamente en cada restart evitando sprites congelados
+- Animación de muerte del caballero y pantalla de Game Over con retry en ambas salas
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+- Transición animada entre habitaciones: se optó por cambio directo de escena para priorizar estabilidad
 
 ---
 
-## Semana 4 — Pulido y entrega (25 mayo – 28 mayo)
+## Semana 4 — Pulido y entrega 
 
 ### Tareas planificadas
-- [ ] Docker: crear `Dockerfile` y probar localmente
-- [ ] GitHub Actions: configurar CI/CD completo
-- [ ] Escribir pruebas unitarias (mínimo 5-10 tests)
-- [ ] Crear cuenta en DockerHub y subir la imagen
-- [ ] Completar `README.md`
+- [x] Docker: crear `Dockerfile` y probar localmente
+- [x] GitHub Actions: configurar CI/CD completo
+- [x] Escribir pruebas unitarias (mínimo 5-10 tests)
+- [x] Crear cuenta en DockerHub y subir la imagen
+- [x] Completar `README.md`
 - [ ] Pruebas finales en Chrome, Firefox y Safari
-- [ ] Pulir arte, sonidos, balance del juego
+- [x] Pulir arte, sonidos, balance del juego
 
 ### Lo que se logró completar
-> _Completar al cierre de la semana…_
+- `DungeonScene.js` como clase base para todas las salas de combate — elimina ~70% de código duplicado entre escenas (GameScene, Scenario2, Scenario3, ScenarioBoss ahora heredan de ella)
+- Corregido bug en `player.js`: el HP persistido desde Pinia ahora se respeta correctamente al crear el jugador
+- Corregido bug en `GameScene.js`: `store.reset()` ya no sobreescribe el HP al cambiar de sala
+- Scenario3 y ScenarioBoss migrados al sistema de herencia de DungeonScene
+- Barra de HP visual añadida al slime en Sala 2 y Sala 3 (faltaba)
+- GitHub Actions CI configurado (`.github/workflows/ci.yml`): corre tests y build en cada push/PR a `main` y `develop`
+- Job de Docker en CI: build y push automático a DockerHub en cada merge a `main`
+- 11 tests unitarios con Vitest: 7 del store (`gameState.spec.js`) y 4 de HomeView (`HomeView.spec.js`)
+- Assets reorganizados en subcarpetas (`backgrounds/`, `player/`, `enemies/`, `effects/`, `ui/`)
+- Eliminados assets sin usar: `dungeon.png`, `Scenario2.png`, `knight.png`, `room4.png`, `torch.png`, `hero.png`
+- Eliminados archivos muertos: `remove_bg.js`, `save_image.js`, `style.css`, `App.spec.js`, carpeta `components/`
+- `Dockerfile` multi-etapa (Node 22 + nginx), `docker-compose.yml` y `.dockerignore` configurados
+- Imagen subida a DockerHub (`bazzty/knight-of-hope`)
+- `README.md` completo con instrucciones de desarrollo, Docker y CI/CD
+- Música y efectos de sonido agregados al juego
 
 ### Lo que no se logró y el motivo
-> _Completar al cierre de la semana…_
+- Pruebas finales en navegadores: pendiente

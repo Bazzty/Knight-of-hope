@@ -250,7 +250,13 @@ export default class DungeonScene extends Phaser.Scene {
         if (!this.player || !this.cursors || !this.wasd) return;
 
         if (this.gameOver) {
-            if (Phaser.Input.Keyboard.JustDown(this.attackKey)) this.scene.restart();
+            if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+                // Al morir y pedir retry, volver al inicio global (GameScene)
+                // Detenemos audio activo y reseteamos el estado del juego.
+                try { this.sound.stopAll(); } catch (e) { /* ignore */ }
+                try { this.store.reset(); } catch (e) { /* ignore */ }
+                this.scene.start('GameScene');
+            }
             return;
         }
 

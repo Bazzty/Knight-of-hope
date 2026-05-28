@@ -66,12 +66,33 @@ async function play() {
   // Reproducir sfx al hacer clic (es interacción del usuario, suele permitirse)
   if (buttonSfx) {
     try {
-      // Intentamos arrancarlo y esperamos un poquito para que se escuche antes de navegar
-      await buttonSfx.play()
+      // Intentamos arrancarlo; no await para evitar bloquear la navegación si play() no
+      // devuelve una Promesa en este entorno de test.
+      const playResult = buttonSfx.play && buttonSfx.play()
+      if (playResult && typeof playResult.catch === 'function') {
+        playResult.catch(e => console.warn('No se pudo reproducir el sfx del botón:', e))
+      }
     } catch (e) {
       console.warn('No se pudo reproducir el sfx del botón:', e)
     }
   }
+
+  // Intentar desbloquear el AudioContext del navegador antes de navegar al juego.
+  // Esto ayuda a que frameworks como Phaser inicien su audio tras la interacción del usuario.
+  try {
+    const isTest = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.MODE === 'test')
+    if (!isTest && typeof window !== 'undefined') {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext
+      if (AudioCtx) {
+        try {
+          const ctx = new AudioCtx()
+          if (ctx && ctx.state === 'suspended' && typeof ctx.resume === 'function') {
+            ctx.resume().catch(() => {})
+          }
+        } catch (e) { /* ignore */ }
+      }
+    }
+  } catch (e) { /* ignore */ }
 
   // pequeña espera para que el click sound se perciba (ajustable)
   await new Promise(r => setTimeout(r, 180))

@@ -17,6 +17,14 @@ export default class ScenarioBoss extends DungeonScene {
         this.load.image('fire-orange', 'assets/effects/fire-orange.png');
         this.load.spritesheet('enemigo', 'assets/enemies/enemigo.png', { frameWidth: 69, frameHeight: 69 });
         this.load.spritesheet('enemigo_attack', 'assets/enemies/ataqueEnemigo.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.audio('bossroomsound', [
+            'assets/audio/music/Bossroom.ogg',
+            'assets/audio/music/Bossroom.mp3'
+        ]);
+        this.load.audio('WinAudio', [
+            'assets/audio/music/sfx/WinAudio.ogg',
+            'assets/audio/music/sfx/WinAudio.mp3'
+        ]);
     }
 
     createScene() {
@@ -43,6 +51,47 @@ export default class ScenarioBoss extends DungeonScene {
         }).setOrigin(0.5, 0).setDepth(200);
 
         this.spawnPlayer(200, 750);
+
+        // Manejo de música: cross-fade desde la música de escenas hacia la música del boss
+        const bgm = this.sound.get('musicforscenes');
+        if (bgm && bgm.isPlaying) {
+            this.tweens.add({
+                targets: bgm,
+                volume: 0,
+                duration: 600,
+                onComplete: () => {
+                    try { bgm.stop(); } catch (e) { /* ignore */ }
+                }
+            });
+        }
+
+        // Arrancamos la música del boss con fade-in
+        const bossMusic = this.sound.add('bossroomsound', { loop: true, volume: 0 });
+        bossMusic.play();
+        this.tweens.add({ targets: bossMusic, volume: 0.12, duration: 600 });
+
+        // Si el audio nativo de Phaser está bloqueado, Phaser 3 lo maneja solo y lo reanuda
+        // cuando el usuario hace clic. Solo ajustamos si ocurre un "unlock" del audio.
+        this.sound.once('unlocked', () => {
+            if (bossMusic && bossMusic.isPlaying) {
+                // Solo aseguramos que tenga el volumen correcto
+                bossMusic.setVolume(0.25);
+            }
+        });
+
+        // Al apagar/terminar la escena, detener la música del boss y restaurar la música de escenas
+        this.events.once('shutdown', () => {
+            try {
+                if (bossMusic && bossMusic.isPlaying) bossMusic.stop();
+            } catch (e) { /* ignore */ }
+
+            const bg = this.sound.get('musicforscenes');
+            if (bg) {
+                // volver a volumen por defecto y reproducir si es necesario
+                bg.setVolume(0.25);
+                if (!bg.isPlaying) bg.play();
+            }
+        });
 
         // ── BOSS ──────────────────────────────────────────────────────────────────────
         // El boss es el mismo sprite que el caballero enemigo, pero más grande y con más HP.
@@ -82,16 +131,50 @@ export default class ScenarioBoss extends DungeonScene {
             this.updateEnemigoHpBar();
 
             if (this.enemigo.hp <= 0) {
-                this.enemigoAttackHitbox.destroy();
-                this.enemigoAttackHitbox = null;
-                this.enemigoHpBarBg.destroy();
-                this.enemigoHpBarBg = null;
-                this.enemigoHpBarFill.destroy();
-                this.enemigoHpBarFill = null;
-                this.enemigo.destroy();
-                this.enemigo = null;
+                // Desactivar físicas de forma segura antes de destruir para evitar que Phaser crashee
+                // si está iterando sobre solapamientos (overlaps) en el mismo frame.
+                if (this.enemigoAttackHitbox && this.enemigoAttackHitbox.body) {
+                    this.enemigoAttackHitbox.body.enable = false;
+                    this.enemigoAttackHitbox.destroy();
+                    this.enemigoAttackHitbox = null;
+                }
+
+                if (this.enemigo) {
+                    this.enemigo.disableBody(true, true);
+                    this.enemigo.active = false;
+                }
+
+                if (this.enemigoHpBarBg) { this.enemigoHpBarBg.destroy(); this.enemigoHpBarBg = null; }
+                if (this.enemigoHpBarFill) { this.enemigoHpBarFill.destroy(); this.enemigoHpBarFill = null; }
+
                 // nextScene = null porque no hay sala siguiente; afterRoomCleared() muestra YOU WIN.
                 this.onRoomCleared(null, 'BOSS DEFEATED!', '#FFD700');
+
+                // Detener la música del Boss gradualmente al ganar
+                const bossMusicInfo = this.sound.get('bossroomsound');
+                if (bossMusicInfo) {
+                    this.tweens.add({ targets: bossMusicInfo, volume: 0, duration: 1000, onComplete: () => bossMusicInfo.stop() });
+                }
+
+                // Reproducir sonido de victoria ('WinAudio')
+                this.sound.play('WinAudio', { volume: 0.3 });
+
+                // Al volver a la pantalla de victoria, hacemos un fade in suave de la música original de las escenas
+                const originalMusic = this.sound.get('musicforscenes');
+                if (originalMusic) {
+                    originalMusic.setVolume(0);
+                    if (!originalMusic.isPlaying) {
+                        originalMusic.play();
+                    }
+                    // Después de unos segundos (para permitir que se oiga un poco de WinAudio), subimos musicforscenes poco a poco
+                    this.time.delayedCall(2000, () => {
+                        this.tweens.add({
+                            targets: originalMusic,
+                            volume: 0.05,
+                            duration: 2000
+                        });
+                    });
+                }
             }
         });
 
@@ -103,7 +186,10 @@ export default class ScenarioBoss extends DungeonScene {
 
     updateEnemigoHpBar() {
         if (!this.enemigoHpBarFill || !this.enemigo) return;
-        this.enemigoHpBarFill.width = 200 * (this.enemigo.hp / this.enemigo.maxHp);
+        // Impedimos que el porcentaje baje de cero, lo que evitará que "width" se vuelva
+        // negativo y haga crashear violentamente al motor gráfico de Phaser.
+        const hpPercent = Math.max(0, this.enemigo.hp / this.enemigo.maxHp);
+        this.enemigoHpBarFill.width = 200 * hpPercent;
     }
 
     // Se llama desde DungeonScene.onRoomCleared() cuando nextScene es null.
@@ -117,6 +203,7 @@ export default class ScenarioBoss extends DungeonScene {
         this.add.text(width / 2, height / 2 - 60, 'YOU WIN!', {
             fontSize: '72px', color: '#FFD700', stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5).setDepth(300);
+
         this.add.text(width / 2, height / 2 + 80, 'Press SPACE to play again', {
             fontSize: '26px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setDepth(300);

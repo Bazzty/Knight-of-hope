@@ -29,11 +29,23 @@ export default class DungeonScene extends Phaser.Scene {
         this.load.spritesheet('knight_walk', 'assets/player/movimientoFinal.png', { frameWidth: 69, frameHeight: 69 });
         this.load.spritesheet('knight_attack', 'assets/player/Ataquefinal.png', { frameWidth: 69, frameHeight: 69 });
         this.load.spritesheet('knight_death', 'assets/player/muerteCaballero.png', { frameWidth: 69, frameHeight: 69 });
+
+        // Carga la música general (Phaser detectará si usa el OGG o el MP3 según el navegador)
+        this.load.audio('musicforscenes', [
+            'assets/audio/music/musicforscenes.ogg',
+            'assets/audio/music/musicforscenes.mp3'
+        ]);
+        this.load.audio('gameoversound', [
+            'assets/audio/music/sfx/gameover.ogg',
+            'assets/audio/music/sfx/gameover.mp3'
+        ]);
+
+        // IMPORTANTE: Llama al pre-load de la respectiva sala (GameScene, Scenario2, etc.)
         this.preloadScene();
     }
 
     // Hook: la subclase carga sus assets específicos (fondo, enemigo, etc.).
-    preloadScene() {}
+    preloadScene() { }
 
     // ── CREATE ────────────────────────────────────────────────────────────────────────
     // Inicializa todo lo común: store, input, animaciones del knight, HUD.
@@ -44,6 +56,19 @@ export default class DungeonScene extends Phaser.Scene {
         this.continueText = null;
 
         this.store = useGameStore();
+
+        // Reproducir música (verificando que no esté sonando ya para que no se reinicie)
+        let musicforscenes = this.sound.get('musicforscenes');
+        if (!musicforscenes) {
+            musicforscenes = this.sound.add('musicforscenes', { loop: true, volume: 0.05 });
+            musicforscenes.play();
+        } else {
+            // Restaurar volumen normal por si venimos de un "Game Over"
+            musicforscenes.setVolume(0.05);
+            if (!musicforscenes.isPlaying) {
+                musicforscenes.play();
+            }
+        }
 
         // Input — idéntico en todas las salas.
         this.cursors = this.input.keyboard.createCursorKeys();
@@ -75,7 +100,7 @@ export default class DungeonScene extends Phaser.Scene {
     }
 
     // Hook principal: la subclase arma el fondo, llama spawnPlayer(), crea enemigos y overlaps.
-    createScene() {}
+    createScene() { }
 
     // ── PLAYER ────────────────────────────────────────────────────────────────────────
     // Crea el jugador leyendo los stats actuales del store.
@@ -112,6 +137,14 @@ export default class DungeonScene extends Phaser.Scene {
     // Congela al jugador, reproduce animación de muerte y muestra UI de game over.
     handlePlayerDeath() {
         this.gameOver = true;
+
+        // Reducir la música de fondo y reproducir el sonido de game over
+        const bgm = this.sound.get('musicforscenes');
+        if (bgm) {
+            bgm.setVolume(0.05);
+        }
+        this.sound.play('gameoversound', { volume: 0.1 });
+
         this.player.setVelocity(0, 0);
         this.player.anims.stop();
         this.player.setTexture('knight_death');
@@ -188,7 +221,7 @@ export default class DungeonScene extends Phaser.Scene {
     }
 
     // Hook para cuando no hay sala siguiente (usado en ScenarioBoss).
-    afterRoomCleared() {}
+    afterRoomCleared() { }
 
     // ── PUERTA ────────────────────────────────────────────────────────────────────────
     // Crea un trigger invisible fuera del borde derecho de la pantalla.
@@ -236,5 +269,5 @@ export default class DungeonScene extends Phaser.Scene {
     }
 
     // Hook: la subclase implementa la IA del enemigo y lógica específica de frame.
-    updateScene() {}
+    updateScene() { }
 }

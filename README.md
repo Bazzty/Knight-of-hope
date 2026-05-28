@@ -67,18 +67,27 @@ pnpm build
 
 ## Run with Docker
 
-### Build and start
-
+### Build and start (local)
 ```bash
 docker compose up --build
 ```
-
 Open `http://localhost:8080`
 
-### Stop
-
+### Stop (local)
 ```bash
 docker compose down
+```
+
+### Pull and run from DockerHub
+```bash
+docker run -d -p 8080:80 --name knight-of-hope bazzty/knight-of-hope:latest
+```
+Open `http://localhost:8080`
+
+### Stop DockerHub container
+```bash
+docker stop knight-of-hope
+docker rm knight-of-hope
 ```
 
 ---

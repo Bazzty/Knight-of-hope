@@ -8,6 +8,18 @@ A 2D roguelite game built with Phaser 4 and Vue 3. Fight through dungeon rooms, 
 
 ---
 
+## Screenshots
+
+| Menu | Combat |
+|------|--------|
+| ![Menu](docs/screenshots/menu.png) | ![Combat](docs/screenshots/combat.png) |
+
+| Upgrades | Boss |
+|----------|------|
+| ![Upgrades](docs/screenshots/upgrades.png) | ![Boss](docs/screenshots/boss.png) |
+
+---
+
 ## Stack
 
 - **Vue 3** — UI shell and navigation

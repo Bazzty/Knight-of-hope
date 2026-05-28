@@ -125,7 +125,7 @@ export default class Scenario3 extends DungeonScene {
         this.skeleHpBarBg = this.add.rectangle(this.skele.x - skeleBarWidth / 2, this.skele.y - 160, skeleBarWidth, barHeight, 0x333333).setOrigin(0, 0).setDepth(200);
         this.skeleHpBarFill = this.add.rectangle(this.skele.x - skeleBarWidth / 2, this.skele.y - 160, skeleBarWidth, barHeight, 0xee4444).setOrigin(0, 0).setDepth(201);
 
-        this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 150, 90);
+        this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 95, 65);
         this.physics.add.existing(this.skeleAttackHitbox);
         this.skeleAttackHitbox.body.enable = false;
 
@@ -317,7 +317,7 @@ export default class Scenario3 extends DungeonScene {
                 this.skeleHpBarFill.setPosition(this.skele.x - 70, this.skele.y - 160);
             }
             if (this.skeleAttackHitbox?.body) {
-                const hitOffX = this.skele.flipX ? -130 : 130;
+                const hitOffX = this.skele.flipX ? -80 : 80;
                 this.skeleAttackHitbox.body.reset(this.skele.x + hitOffX, this.skele.y - 60);
             }
 

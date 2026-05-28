@@ -46,6 +46,20 @@ export default class ScenarioBoss extends DungeonScene {
     }
 
     createScene() {
+        // Resetear estado entre runs (el constructor no se vuelve a llamar al reiniciar la escena)
+        this.enemigo = null; this.enemigoAttackHitbox = null;
+        this.enemigoHpBarBg = null; this.enemigoHpBarFill = null;
+        this.bossPhase2 = false; this.bossPhase3 = false;
+        this.bossSpawned = false; this.bossInvulnerable = false;
+        this.slime = null; this.slimeAttackHitbox = null;
+        this.slimeHpBarBg = null; this.slimeHpBarFill = null;
+        this.slime2 = null; this.slimeAttackHitbox2 = null;
+        this.slimeHpBarBg2 = null; this.slimeHpBarFill2 = null;
+        this.skele = null; this.skeleAttackHitbox = null;
+        this.skeleHpBarBg = null; this.skeleHpBarFill = null;
+        this.skele2 = null; this.skeleAttackHitbox2 = null;
+        this.skeleHpBarBg2 = null; this.skeleHpBarFill2 = null;
+
         const { width, height } = this.scale;
 
         this.add.image(width / 2, height / 2, 'throne').setDisplaySize(width, height);
@@ -92,7 +106,7 @@ export default class ScenarioBoss extends DungeonScene {
 
         this.slimeHpBarBg  = this.add.rectangle(this.slime.x - 70, this.slime.y - 160, 140, bh, 0x333333).setOrigin(0, 0).setDepth(200);
         this.slimeHpBarFill = this.add.rectangle(this.slime.x - 70, this.slime.y - 160, 140, bh, 0xee4444).setOrigin(0, 0).setDepth(201);
-        this.slimeAttackHitbox = this.add.rectangle(this.slime.x, this.slime.y, 150, 90);
+        this.slimeAttackHitbox = this.add.rectangle(this.slime.x, this.slime.y, 95, 65);
         this.physics.add.existing(this.slimeAttackHitbox); this.slimeAttackHitbox.body.enable = false;
 
         this.slime.on('animationcomplete', (anim) => {
@@ -109,7 +123,7 @@ export default class ScenarioBoss extends DungeonScene {
 
         this.slimeHpBarBg2  = this.add.rectangle(this.slime2.x - 70, this.slime2.y - 160, 140, bh, 0x333333).setOrigin(0, 0).setDepth(200);
         this.slimeHpBarFill2 = this.add.rectangle(this.slime2.x - 70, this.slime2.y - 160, 140, bh, 0xee4444).setOrigin(0, 0).setDepth(201);
-        this.slimeAttackHitbox2 = this.add.rectangle(this.slime2.x, this.slime2.y, 150, 90);
+        this.slimeAttackHitbox2 = this.add.rectangle(this.slime2.x, this.slime2.y, 95, 65);
         this.physics.add.existing(this.slimeAttackHitbox2); this.slimeAttackHitbox2.body.enable = false;
 
         this.slime2.on('animationcomplete', (anim) => {
@@ -200,7 +214,7 @@ export default class ScenarioBoss extends DungeonScene {
 
         this.skeleHpBarBg  = this.add.rectangle(this.skele.x - 70, this.skele.y - 160, bw, bh, 0x333333).setOrigin(0, 0).setDepth(200);
         this.skeleHpBarFill = this.add.rectangle(this.skele.x - 70, this.skele.y - 160, bw, bh, 0xee4444).setOrigin(0, 0).setDepth(201);
-        this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 150, 90);
+        this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 95, 65);
         this.physics.add.existing(this.skeleAttackHitbox); this.skeleAttackHitbox.body.enable = false;
 
         this.skele.on('animationcomplete', (anim) => {
@@ -218,7 +232,7 @@ export default class ScenarioBoss extends DungeonScene {
 
         this.skeleHpBarBg2  = this.add.rectangle(this.skele2.x - 70, this.skele2.y - 160, bw, bh, 0x333333).setOrigin(0, 0).setDepth(200);
         this.skeleHpBarFill2 = this.add.rectangle(this.skele2.x - 70, this.skele2.y - 160, bw, bh, 0xee4444).setOrigin(0, 0).setDepth(201);
-        this.skeleAttackHitbox2 = this.add.rectangle(this.skele2.x, this.skele2.y, 150, 90);
+        this.skeleAttackHitbox2 = this.add.rectangle(this.skele2.x, this.skele2.y, 95, 65);
         this.physics.add.existing(this.skeleAttackHitbox2); this.skeleAttackHitbox2.body.enable = false;
 
         this.skele2.on('animationcomplete', (anim) => {
@@ -316,7 +330,7 @@ export default class ScenarioBoss extends DungeonScene {
             this.enemigo.hp = 40; this.enemigo.maxHp = 40;
             this.enemigo.setAlpha(0); this.tweens.add({ targets: this.enemigo, alpha: 1, duration: 600 });
 
-            this.enemigoAttackHitbox = this.add.rectangle(this.enemigo.x, this.enemigo.y, 140, 100);
+            this.enemigoAttackHitbox = this.add.rectangle(this.enemigo.x, this.enemigo.y, 95, 70);
             this.physics.add.existing(this.enemigoAttackHitbox); this.enemigoAttackHitbox.body.enable = false;
 
             this.enemigo.on('animationcomplete', (anim) => {
@@ -378,6 +392,11 @@ export default class ScenarioBoss extends DungeonScene {
         this.bossInvulnerable = true;
         const { width, height } = this.scale;
 
+        if (this.enemigo?.active) {
+            this.enemigo.setVelocity(0, 0);
+            this.tweens.add({ targets: this.enemigo, x: width - 140, duration: 350, ease: 'Power2' });
+        }
+
         this.cameras.main.shake(350, 0.016);
         const flash = this.add.rectangle(width / 2, height / 2, width, height, 0xff0000).setDepth(250).setAlpha(0.4);
         this.tweens.add({ targets: flash, alpha: 0, duration: 500, onComplete: () => flash.destroy() });
@@ -416,6 +435,12 @@ export default class ScenarioBoss extends DungeonScene {
     triggerBossPhase3() {
         this.bossPhase3 = true;
         this.bossInvulnerable = true;
+
+        if (this.enemigo?.active) {
+            this.enemigo.setVelocity(0, 0);
+            this.tweens.add({ targets: this.enemigo, x: this.scale.width - 140, duration: 350, ease: 'Power2' });
+        }
+
         this.cameras.main.shake(500, 0.025);
 
         this.showDialogue([
@@ -543,7 +568,7 @@ export default class ScenarioBoss extends DungeonScene {
             this.slime.setDepth(this.slime.y);
             const dx = this.player.x - this.slime.x;
             if (this.slimeHpBarBg) { this.slimeHpBarBg.setPosition(this.slime.x - 70, this.slime.y - 160); this.slimeHpBarFill.setPosition(this.slime.x - 70, this.slime.y - 160); }
-            if (this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.reset(this.slime.x + (this.slime.flipX ? -130 : 130), this.slime.y - 60);
+            if (this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.reset(this.slime.x + (this.slime.flipX ? -80 : 80), this.slime.y - 60);
             if (this.slime.isAttacking) { this.slime.setVelocityX(0); }
             else if (Math.abs(dx) > 180) { this.slime.setVelocityX(dx > 0 ? 70 : -70); this.slime.setFlipX(dx < 0); this.slime.play('skeleton_walk_anim', true); }
             else {
@@ -559,7 +584,7 @@ export default class ScenarioBoss extends DungeonScene {
             this.slime2.setDepth(this.slime2.y);
             const dx2 = this.player.x - this.slime2.x;
             if (this.slimeHpBarBg2) { this.slimeHpBarBg2.setPosition(this.slime2.x - 70, this.slime2.y - 160); this.slimeHpBarFill2.setPosition(this.slime2.x - 70, this.slime2.y - 160); }
-            if (this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.reset(this.slime2.x + (this.slime2.flipX ? -130 : 130), this.slime2.y - 60);
+            if (this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.reset(this.slime2.x + (this.slime2.flipX ? -80 : 80), this.slime2.y - 60);
             if (this.slime2.isAttacking) { this.slime2.setVelocityX(0); }
             else if (Math.abs(dx2) > 180) { this.slime2.setVelocityX(dx2 > 0 ? 70 : -70); this.slime2.setFlipX(dx2 < 0); this.slime2.play('skeleton_walk_anim', true); }
             else {
@@ -580,7 +605,7 @@ export default class ScenarioBoss extends DungeonScene {
             sk.setDepth(sk.y);
             const dxs = this.player.x - sk.x;
             if (bg) { bg.setPosition(sk.x - 70, sk.y - 160); fill.setPosition(sk.x - 70, sk.y - 160); }
-            if (hb?.body) hb.body.reset(sk.x + (sk.flipX ? -130 : 130), sk.y - 60);
+            if (hb?.body) hb.body.reset(sk.x + (sk.flipX ? -80 : 80), sk.y - 60);
             if (sk.isAttacking) { sk.setVelocityX(0); }
             else if (Math.abs(dxs) > 180) { sk.setVelocityX(dxs > 0 ? 80 : -80); sk.setFlipX(dxs < 0); sk.play('skeleton_walk_anim', true); }
             else {
@@ -594,6 +619,7 @@ export default class ScenarioBoss extends DungeonScene {
 
         // ── IA boss (oleada 3) ────────────────────────────────────────────────────────
         if (!this.enemigo?.active || !this.bossSpawned) return;
+        if (this.bossInvulnerable) { this.enemigo.setVelocityX(0); return; }
 
         this.enemigo.setDepth(this.enemigo.y);
         const distanciaX = this.player.x - this.enemigo.x;
@@ -609,8 +635,8 @@ export default class ScenarioBoss extends DungeonScene {
 
         if (this.enemigo.isCharging) return;
 
-        const attackRange = this.bossPhase3 ? 260 : 160;
-        const hitOffX = this.bossPhase3 ? 220 : 150;
+        const attackRange = this.bossPhase3 ? 220 : 140;
+        const hitOffX = this.bossPhase3 ? 145 : 95;
 
         const hitOffsetX = this.enemigo.flipX ? -hitOffX : hitOffX;
         this.enemigoAttackHitbox.body.reset(this.enemigo.x + hitOffsetX, this.enemigo.y);

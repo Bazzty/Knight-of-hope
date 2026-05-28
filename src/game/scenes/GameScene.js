@@ -70,7 +70,7 @@ export default class GameScene extends DungeonScene {
         this.enemigoHpBarBg   = this.add.rectangle(this.enemigo.x - eBarW / 2, this.enemigo.y - 250, eBarW, eBarH, 0x333333).setOrigin(0, 0).setDepth(200);
         this.enemigoHpBarFill = this.add.rectangle(this.enemigo.x - eBarW / 2, this.enemigo.y - 250, eBarW, eBarH, 0xee4444).setOrigin(0, 0).setDepth(201);
 
-        this.enemigoAttackHitbox = this.add.rectangle(this.enemigo.x, this.enemigo.y, 140, 100);
+        this.enemigoAttackHitbox = this.add.rectangle(this.enemigo.x, this.enemigo.y, 95, 70);
         this.physics.add.existing(this.enemigoAttackHitbox);
         this.enemigoAttackHitbox.body.enable = false;
 
@@ -98,7 +98,7 @@ export default class GameScene extends DungeonScene {
         this.skeleHpBarBg   = this.add.rectangle(this.skele.x - sBarW / 2, this.skele.y - 155, sBarW, sBarH, 0x333333).setOrigin(0, 0).setDepth(200);
         this.skeleHpBarFill = this.add.rectangle(this.skele.x - sBarW / 2, this.skele.y - 155, sBarW, sBarH, 0xee4444).setOrigin(0, 0).setDepth(201);
 
-        this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 150, 90);
+        this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 95, 65);
         this.physics.add.existing(this.skeleAttackHitbox);
         this.skeleAttackHitbox.body.enable = false;
 
@@ -216,7 +216,7 @@ export default class GameScene extends DungeonScene {
             this.enemigoHpBarBg.setPosition(this.enemigo.x - 70, this.enemigo.y - 250);
             this.enemigoHpBarFill.setPosition(this.enemigo.x - 70, this.enemigo.y - 250);
 
-            const hitOffsetX = this.enemigo.flipX ? -150 : 150;
+            const hitOffsetX = this.enemigo.flipX ? -95 : 95;
             this.enemigoAttackHitbox.body.reset(this.enemigo.x + hitOffsetX, this.enemigo.y);
 
             if (this.enemigo.isAttacking) {
@@ -252,7 +252,7 @@ export default class GameScene extends DungeonScene {
                 this.skeleHpBarFill.setPosition(this.skele.x - 60, this.skele.y - 155);
             }
             if (this.skeleAttackHitbox?.body) {
-                this.skeleAttackHitbox.body.reset(this.skele.x + (this.skele.flipX ? -130 : 130), this.skele.y - 60);
+                this.skeleAttackHitbox.body.reset(this.skele.x + (this.skele.flipX ? -80 : 80), this.skele.y - 60);
             }
 
             if (this.skele.isAttacking) {

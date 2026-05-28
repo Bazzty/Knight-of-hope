@@ -83,7 +83,7 @@ export default class DungeonScene extends Phaser.Scene {
         // Animaciones del knight — idénticas en todas las salas.
         // El guard !this.anims.exists() evita error al reiniciar la escena.
         if (!this.anims.exists('knight_defend_anim')) {
-            this.anims.create({ key: 'knight_defend_anim', frames: this.anims.generateFrameNumbers('knight_defend', { start: 0, end: 5 }), frameRate: 10, repeat: 0 });
+            this.anims.create({ key: 'knight_defend_anim', frames: this.anims.generateFrameNumbers('knight_defend', { start: 0, end: 5 }), frameRate: 10, repeat: -1 });
         }
         if (!this.anims.exists('knight_idle_anim')) {
             this.anims.create({ key: 'knight_idle_anim', frames: this.anims.generateFrameNumbers('knight_idle', { start: 0, end: 6 }), frameRate: 8, repeat: -1 });
@@ -124,6 +124,7 @@ export default class DungeonScene extends Phaser.Scene {
             damage: this.store.playerDamage,
             maxHp: this.store.maxHp,
             hp: this.store.hp,
+            blockKey: this.blockKey,
         });
         this.updateHpDisplay();
     }

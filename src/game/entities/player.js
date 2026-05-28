@@ -39,6 +39,7 @@ export default function createPlayer(scene, x, y, config = {}) {
 
     // Bloqueo con escudo — mientras es true, los golpes no hacen daño.
     player.isBlocking = false;
+    player.blockKey = config.blockKey ?? null;
 
     // Evita que un solo ataque dañe al enemigo más de una vez por pulsación de SPACE.
     // Se resetea cuando la animación de ataque termina.
@@ -47,7 +48,7 @@ export default function createPlayer(scene, x, y, config = {}) {
     // ── HITBOX DE ATAQUE ──────────────────────────────────────────────────────────────
     // Rectángulo invisible que representa el área de daño del arma del jugador.
     // Usamos add.rectangle() para crear un objeto gráfico y luego le agregamos física.
-    const attackHitbox = scene.add.rectangle(x, y, 120, 70);
+    const attackHitbox = scene.add.rectangle(x, y, 90, 60);
 
     // physics.add.existing() añade un cuerpo físico dinámico al rectángulo.
     // Así Phaser puede detectar solapamiento (overlap) con otros objetos.
@@ -62,7 +63,7 @@ export default function createPlayer(scene, x, y, config = {}) {
     // ── SISTEMA DE DAÑO ──────────────────────────────────────────────────────────────
     player.takeDamage = (amount) => {
         if (player.isInvincible || player.hp <= 0) return false;
-        if (player.isBlocking) return false;
+        if (player.isBlocking || player.blockKey?.isDown) return false;
 
         // Math.max(0, ...) evita que la vida quede en negativo.
         player.hp = Math.max(0, player.hp - amount);
@@ -165,7 +166,7 @@ export default function createPlayer(scene, x, y, config = {}) {
             }
         }
 
-        const hitOffsetX = player.flipX ? -170 : 170;
+        const hitOffsetX = player.flipX ? -115 : 115;
         attackHitbox.body.reset(player.x + hitOffsetX, player.y - 170);
     };
 

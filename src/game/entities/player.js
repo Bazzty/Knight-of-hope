@@ -154,12 +154,18 @@ export default function createPlayer(scene, x, y, config = {}) {
                 player.setFlipX(false);
             }
 
-            body.setVelocity(vx * player.speed, 0);
+            const currentSpeed = (vx !== 0 && input.sprint) ? player.speed * 1.6 : player.speed;
+            body.setVelocity(vx * currentSpeed, 0);
 
             if (vx !== 0) {
-                if (player.anims.currentAnim?.key !== 'knight_run_anim') {
-                    player.setTexture('knight_run');
-                    player.play('knight_run_anim', true);
+                if (input.sprint) {
+                    if (player.anims.currentAnim?.key !== 'knight_run_anim') {
+                        player.setTexture('knight_run');
+                        player.play('knight_run_anim', true);
+                    }
+                } else if (player.anims.currentAnim?.key !== 'knight_walk_anim') {
+                    player.setTexture('knight_walk');
+                    player.play('knight_walk_anim', true);
                 }
             } else if (player.anims.currentAnim?.key !== 'knight_idle_anim') {
                 player.setTexture('knight_idle');

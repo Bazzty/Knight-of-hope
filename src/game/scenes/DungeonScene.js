@@ -63,6 +63,10 @@ export default class DungeonScene extends Phaser.Scene {
         this.gameOver = false;
         this.gameOverText = null;
         this.continueText = null;
+        this._lastLeftTap = 0;
+        this._lastRightTap = 0;
+        this._sprintLeft = false;
+        this._sprintRight = false;
 
         this.store = useGameStore();
 
@@ -296,12 +300,24 @@ export default class DungeonScene extends Phaser.Scene {
 
         if (!this.player.isBlocking && Phaser.Input.Keyboard.JustDown(this.attackKey)) this.player.attack();
 
+        const now = this.time.now;
+        const leftJust  = Phaser.Input.Keyboard.JustDown(this.cursors.left)  || Phaser.Input.Keyboard.JustDown(this.wasd.A);
+        const rightJust = Phaser.Input.Keyboard.JustDown(this.cursors.right) || Phaser.Input.Keyboard.JustDown(this.wasd.D);
+        const leftHeld  = this.cursors.left.isDown  || this.wasd.A.isDown;
+        const rightHeld = this.cursors.right.isDown || this.wasd.D.isDown;
+
+        if (leftJust)  { if (now - this._lastLeftTap  < 280) this._sprintLeft  = true; this._lastLeftTap  = now; }
+        if (rightJust) { if (now - this._lastRightTap < 280) this._sprintRight = true; this._lastRightTap = now; }
+        if (!leftHeld)  this._sprintLeft  = false;
+        if (!rightHeld) this._sprintRight = false;
+
         this.player.updateMovement({
-            left: this.cursors.left.isDown || this.wasd.A.isDown,
-            right: this.cursors.right.isDown || this.wasd.D.isDown,
+            left: leftHeld,
+            right: rightHeld,
             up: this.cursors.up.isDown || this.wasd.W.isDown,
             down: this.cursors.down.isDown || this.wasd.S.isDown,
-            block: this.blockKey.isDown
+            block: this.blockKey.isDown,
+            sprint: this._sprintLeft || this._sprintRight
         });
 
         this.player.setDepth(this.player.y);

@@ -5,22 +5,18 @@ export default function createPlayer(scene, x, y, config = {}) {
 
     // Crea un sprite con física arcade en la posición indicada.
     // 'knight_walk' es la clave del spritesheet cargado en preload(), y 0 es el frame inicial.
-    const player = scene.physics.add.sprite(x, y, 'knight_walk', 0);
+    const player = scene.physics.add.sprite(x, y, 'knight_idle', 0);
 
     // El origen (0.5, 1) significa: centro horizontal, base inferior.
     // Así player.y siempre representa los pies del personaje, útil para profundidad (setDepth).
     player.setOrigin(0.5, 1);
 
-    // Escala visual del sprite. Los frames son 69x69 px, con scale 4.5 quedan ~310px en pantalla.
-    player.setScale(4.5);
+    // Escala visual del sprite. Los frames son 96x84 px, con scale 4.0 quedan ~384px de ancho en pantalla.
+    player.setScale(5.0);
 
-    // Define el tamaño del cuerpo físico (hitbox de colisión), en píxeles del texture original (sin escala).
-    // 60x50 es más pequeño que el frame completo para que las colisiones se sientan justas.
-    player.setBodySize(60, 50);
-
-    // Desplaza el cuerpo físico respecto a la esquina superior izquierda del sprite.
-    // Necesario para centrar bien el hitbox sobre el personaje visible.
-    player.setOffset(24, 33);
+    // Hitbox ajustada al cuerpo visible del caballero dentro del frame 96x84.
+    player.setBodySize(55, 70);
+    player.setOffset(20, 10);
 
     // Impide que el jugador salga de los límites definidos con physics.world.setBounds().
     player.setCollideWorldBounds(true);
@@ -31,8 +27,8 @@ export default function createPlayer(scene, x, y, config = {}) {
     // Daño por ataque. Puede venir del store (upgrade ataque).
     player.damage = config.damage ?? 1;
 
-    // Estado de ataque: mientras es true el jugador no puede moverse ni atacar de nuevo.
     player.isAttacking = false;
+    player.attackCombo = 0;
 
     // Sistema de vida del jugador. maxHp puede venir del store (upgrade salud).
     player.maxHp = config.maxHp ?? 10;
@@ -41,6 +37,10 @@ export default function createPlayer(scene, x, y, config = {}) {
     // Bandera de invencibilidad: evita recibir daño múltiple en el mismo momento (iframes).
     player.isInvincible = false;
 
+    // Bloqueo con escudo — mientras es true, los golpes no hacen daño.
+    player.isBlocking = false;
+    player.blockKey = config.blockKey ?? null;
+
     // Evita que un solo ataque dañe al enemigo más de una vez por pulsación de SPACE.
     // Se resetea cuando la animación de ataque termina.
     player.attackHasHit = false;
@@ -48,7 +48,7 @@ export default function createPlayer(scene, x, y, config = {}) {
     // ── HITBOX DE ATAQUE ──────────────────────────────────────────────────────────────
     // Rectángulo invisible que representa el área de daño del arma del jugador.
     // Usamos add.rectangle() para crear un objeto gráfico y luego le agregamos física.
-    const attackHitbox = scene.add.rectangle(x, y, 120, 70);
+    const attackHitbox = scene.add.rectangle(x, y, 90, 60);
 
     // physics.add.existing() añade un cuerpo físico dinámico al rectángulo.
     // Así Phaser puede detectar solapamiento (overlap) con otros objetos.
@@ -62,8 +62,8 @@ export default function createPlayer(scene, x, y, config = {}) {
 
     // ── SISTEMA DE DAÑO ──────────────────────────────────────────────────────────────
     player.takeDamage = (amount) => {
-        // Si ya está en iframes o ya murió, ignora el golpe.
         if (player.isInvincible || player.hp <= 0) return false;
+        if (player.isBlocking || player.blockKey?.isDown) return false;
 
         // Math.max(0, ...) evita que la vida quede en negativo.
         player.hp = Math.max(0, player.hp - amount);
@@ -72,11 +72,17 @@ export default function createPlayer(scene, x, y, config = {}) {
             return true;
         }
 
-        // Activa invencibilidad temporal para evitar daño en cadena.
         player.isInvincible = true;
 
-        // Efecto visual de parpadeo: alterna entre transparente y visible 4 veces (~1 segundo).
-        // yoyo: true hace que vuelva al estado original automáticamente después de cada ciclo.
+        if (!player.isAttacking) {
+            player.setTexture('knight_hurt');
+            player.play('knight_hurt_anim', true);
+            player.once('animationcomplete', (anim) => {
+                if (anim.key !== 'knight_hurt_anim') return;
+                if (!player.isAttacking) resetToIdle();
+            });
+        }
+
         scene.tweens.add({
             targets: player,
             alpha: 0,
@@ -97,40 +103,27 @@ export default function createPlayer(scene, x, y, config = {}) {
     function resetToIdle() {
         player.isAttacking = false;
         player.attackHasHit = false;
-
-        // Desactiva la hitbox de ataque para que no siga haciendo daño.
         attackHitbox.body.enable = false;
-
-        // Vuelve al spritesheet de caminar y pausa si no se está moviendo.
-        player.setTexture('knight_walk');
-        player.play('knight_walk_anim', true);
-
-        if (!player.body || (player.body.velocity.x === 0 && player.body.velocity.y === 0)) {
-            player.anims.pause();
-        }
+        player.setTexture('knight_idle');
+        player.play('knight_idle_anim', true);
     }
 
-    // Phaser emite el evento 'animationcomplete' cuando una animación sin loop termina.
-    // Lo usamos para detectar cuándo terminó el ataque y volver al estado idle.
     player.on('animationcomplete', (anim) => {
-        if (anim.key === 'knight_attack_anim') {
+        if (anim.key === 'knight_attack1_anim' || anim.key === 'knight_attack2_anim' || anim.key === 'knight_attack3_anim') {
             resetToIdle();
         }
     });
 
     // ── ATAQUE ────────────────────────────────────────────────────────────────────────
     player.attack = () => {
-        // Si ya está atacando, no hace nada (evita spam de ataques).
         if (player.isAttacking) return;
-
         player.isAttacking = true;
-
-        // Activa la hitbox para que pueda golpear al enemigo.
         attackHitbox.body.enable = true;
-
-        // Cambia al spritesheet de ataque y reproduce la animación una sola vez (repeat: 0).
-        player.setTexture('knight_attack');
-        player.play('knight_attack_anim', true);
+        const combo = player.attackCombo % 3;
+        player.attackCombo++;
+        if (combo === 0) { player.setTexture('knight_attack1'); player.play('knight_attack1_anim', true); }
+        else if (combo === 1) { player.setTexture('knight_attack2'); player.play('knight_attack2_anim', true); }
+        else { player.setTexture('knight_attack3'); player.play('knight_attack3_anim', true); }
     };
 
     // ── MOVIMIENTO ────────────────────────────────────────────────────────────────────
@@ -140,38 +133,48 @@ export default function createPlayer(scene, x, y, config = {}) {
         if (!body) return;
 
         if (player.isAttacking) {
-            // Durante el ataque el jugador no se puede mover.
+            player.isBlocking = false;
             body.setVelocity(0, 0);
+        } else if (input.block) {
+            player.isBlocking = true;
+            body.setVelocity(0, 0);
+            if (player.anims.currentAnim?.key !== 'knight_defend_anim') {
+                player.setTexture('knight_defend');
+                player.play('knight_defend_anim', true);
+            }
         } else {
+            player.isBlocking = false;
             let vx = 0;
 
             if (input.left) {
                 vx = -1;
-                // setFlipX(true) espeja el sprite horizontalmente para mirar a la izquierda.
                 player.setFlipX(true);
             } else if (input.right) {
                 vx = 1;
                 player.setFlipX(false);
             }
 
-            // Multiplica la dirección (-1 o 1) por la velocidad para obtener px/seg.
-            body.setVelocity(vx * player.speed, 0);
+            const currentSpeed = (vx !== 0 && input.sprint) ? player.speed * 1.6 : player.speed;
+            body.setVelocity(vx * currentSpeed, 0);
 
             if (vx !== 0) {
-                // true = no reiniciar la animación si ya está reproduciéndose.
-                player.play('knight_walk_anim', true);
-            } else if (!player.anims.isPlaying || player.anims.currentAnim?.key !== 'knight_attack_anim') {
-                // Si está quieto, pausa la animación en el primer frame (pose de reposo).
-                player.play('knight_walk_anim', true);
-                player.anims.pause();
+                if (input.sprint) {
+                    if (player.anims.currentAnim?.key !== 'knight_run_anim') {
+                        player.setTexture('knight_run');
+                        player.play('knight_run_anim', true);
+                    }
+                } else if (player.anims.currentAnim?.key !== 'knight_walk_anim') {
+                    player.setTexture('knight_walk');
+                    player.play('knight_walk_anim', true);
+                }
+            } else if (player.anims.currentAnim?.key !== 'knight_idle_anim') {
+                player.setTexture('knight_idle');
+                player.play('knight_idle_anim', true);
             }
         }
 
-        // Sincroniza la hitbox de ataque delante del jugador en cada frame.
-        // Si mira a la izquierda (flipX), el offset es negativo; si mira a la derecha, positivo.
-        // y - 200 aproxima la altura del arma (ajustar según el spritesheet).
-        const hitOffsetX = player.flipX ? -150 : 150;
-        attackHitbox.body.reset(player.x + hitOffsetX, player.y - 200);
+        const hitOffsetX = player.flipX ? -115 : 115;
+        attackHitbox.body.reset(player.x + hitOffsetX, player.y - 170);
     };
 
     return player;

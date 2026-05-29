@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import IntroScene from './scenes/IntroScene';
 import GameScene from './scenes/GameScene';
 import Scenario2 from './scenes/Scenario2';
 import Scenario3 from './scenes/Scenario3';
@@ -20,7 +21,7 @@ const config = {
         default: 'arcade',
         arcade: { gravity: { y: 0 } }
     },
-    scene: [GameScene, Scenario2, Scenario3, ScenarioBoss, UpgradeScene]
+    scene: [IntroScene, GameScene, Scenario2, Scenario3, ScenarioBoss, UpgradeScene]
 };
 
 export const initGame = () => {

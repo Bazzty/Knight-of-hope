@@ -1,10 +1,10 @@
 # Knight of Hope
 
-A knight, fed up with cruelty, injustice, and power, challenges his own abilities by venturing into the catacombs of humanity, which hold the terrible reasons for the decline of ancient society.
+A knight, fed up with cruelty, injustice, and power, challenges his own abilities by venturing into the catacombs of humanity — which hold the terrible reasons for the decline of ancient society.
 
-A 2D roguelite game built with Phaser 4 and Vue 3. Fight through dungeon rooms, defeat enemies, and choose upgrades between battles.
+A 2D roguelite game built with **Phaser 4** and **Vue 3**. Fight through dungeon rooms, defeat enemies, collect upgrades between battles, and face The Guardian in a final boss encounter with multiple phases.
 
-**Team:** [Bastian Contreras](https://github.com/Bazzty), [Ignacio Ovalle](https://github.com/iovalleh21)
+**Team:** [Bastian Contreras](https://github.com/Bazzty) · [Ignacio Ovalle](https://github.com/iovalleh21)
 
 ---
 
@@ -20,13 +20,42 @@ A 2D roguelite game built with Phaser 4 and Vue 3. Fight through dungeon rooms, 
 
 ---
 
+## Features
+
+- **4 combat rooms** — dungeon, ruins, cave, and throne room
+- **3-phase boss** — The Guardian with rage mode, dialogue, and UNLEASHED form
+- **Upgrade system** — choose between health, damage, or speed cards between rooms
+- **Sprint mechanic** — double-tap a direction to dash at 1.6× speed
+- **Block / parry** — hold SHIFT to raise your shield and negate incoming damage
+- **Attack combo** — 3 rotating attack animations (sword swing, slash, arc)
+- **Persistent HP** — life carries over between rooms via Pinia state
+- **Full audio** — background music per room, boss music, sound effects
+
+---
+
+## Controls
+
+| Action | Key |
+|--------|-----|
+| Move | Arrow keys / WASD |
+| Sprint | Double-tap left or right |
+| Attack | SPACE |
+| Block | SHIFT (hold) |
+| Advance dialogue | SPACE |
+| Retry after death | SPACE |
+
+---
+
 ## Stack
 
-- **Vue 3** — UI shell and navigation
-- **Phaser 4** — game engine
-- **Vite** — bundler
-- **Pinia** — state management between scenes
-- **pnpm** — package manager
+| Tool | Role |
+|------|------|
+| Vue 3 | UI shell, mounts the canvas |
+| Phaser 4 | Game engine — physics, scenes, sprites |
+| Pinia | State management between scenes |
+| Vite | Bundler / dev server |
+| Vitest | Unit tests |
+| pnpm | Package manager |
 
 ---
 

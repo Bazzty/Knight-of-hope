@@ -91,7 +91,7 @@
 - [x] Escribir pruebas unitarias (mínimo 5-10 tests)
 - [x] Crear cuenta en DockerHub y subir la imagen
 - [x] Completar `README.md`
-- [ ] Pruebas finales en Chrome, Firefox y Safari
+- [x] Pruebas finales en Chrome, Firefox y Safari
 - [x] Pulir arte, sonidos, balance del juego
 
 ### Lo que se logró completar
@@ -112,4 +112,4 @@
 - Música y efectos de sonido agregados al juego
 
 ### Lo que no se logró y el motivo
-- Pruebas finales en navegadores: pendiente
+> Se completaron todas las tareas planificadas para esta semana.

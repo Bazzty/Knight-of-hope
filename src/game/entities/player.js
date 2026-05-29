@@ -27,8 +27,8 @@ export default function createPlayer(scene, x, y, config = {}) {
     // Daño por ataque. Puede venir del store (upgrade ataque).
     player.damage = config.damage ?? 1;
 
-    // Estado de ataque: mientras es true el jugador no puede moverse ni atacar de nuevo.
     player.isAttacking = false;
+    player.attackCombo = 0;
 
     // Sistema de vida del jugador. maxHp puede venir del store (upgrade salud).
     player.maxHp = config.maxHp ?? 10;
@@ -72,11 +72,17 @@ export default function createPlayer(scene, x, y, config = {}) {
             return true;
         }
 
-        // Activa invencibilidad temporal para evitar daño en cadena.
         player.isInvincible = true;
 
-        // Efecto visual de parpadeo: alterna entre transparente y visible 4 veces (~1 segundo).
-        // yoyo: true hace que vuelva al estado original automáticamente después de cada ciclo.
+        if (!player.isAttacking) {
+            player.setTexture('knight_hurt');
+            player.play('knight_hurt_anim', true);
+            player.once('animationcomplete', (anim) => {
+                if (anim.key !== 'knight_hurt_anim') return;
+                if (!player.isAttacking) resetToIdle();
+            });
+        }
+
         scene.tweens.add({
             targets: player,
             alpha: 0,
@@ -98,13 +104,12 @@ export default function createPlayer(scene, x, y, config = {}) {
         player.isAttacking = false;
         player.attackHasHit = false;
         attackHitbox.body.enable = false;
-        player.setScale(5.0);
         player.setTexture('knight_idle');
         player.play('knight_idle_anim', true);
     }
 
     player.on('animationcomplete', (anim) => {
-        if (anim.key === 'knight_attack_anim' || anim.key === 'knight_attack2_anim') {
+        if (anim.key === 'knight_attack1_anim' || anim.key === 'knight_attack2_anim' || anim.key === 'knight_attack3_anim') {
             resetToIdle();
         }
     });
@@ -114,9 +119,11 @@ export default function createPlayer(scene, x, y, config = {}) {
         if (player.isAttacking) return;
         player.isAttacking = true;
         attackHitbox.body.enable = true;
-        player.setScale(7.0);
-        player.setTexture('knight_attack2');
-        player.play('knight_attack2_anim', true);
+        const combo = player.attackCombo % 3;
+        player.attackCombo++;
+        if (combo === 0) { player.setTexture('knight_attack1'); player.play('knight_attack1_anim', true); }
+        else if (combo === 1) { player.setTexture('knight_attack2'); player.play('knight_attack2_anim', true); }
+        else { player.setTexture('knight_attack3'); player.play('knight_attack3_anim', true); }
     };
 
     // ── MOVIMIENTO ────────────────────────────────────────────────────────────────────
@@ -131,7 +138,6 @@ export default function createPlayer(scene, x, y, config = {}) {
         } else if (input.block) {
             player.isBlocking = true;
             body.setVelocity(0, 0);
-            player.setScale(5.0);
             if (player.anims.currentAnim?.key !== 'knight_defend_anim') {
                 player.setTexture('knight_defend');
                 player.play('knight_defend_anim', true);
@@ -152,12 +158,10 @@ export default function createPlayer(scene, x, y, config = {}) {
 
             if (vx !== 0) {
                 if (player.anims.currentAnim?.key !== 'knight_run_anim') {
-                    player.setScale(7.0);
                     player.setTexture('knight_run');
                     player.play('knight_run_anim', true);
                 }
             } else if (player.anims.currentAnim?.key !== 'knight_idle_anim') {
-                player.setScale(5.0);
                 player.setTexture('knight_idle');
                 player.play('knight_idle_anim', true);
             }

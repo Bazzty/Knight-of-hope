@@ -98,31 +98,25 @@ export default function createPlayer(scene, x, y, config = {}) {
         player.isAttacking = false;
         player.attackHasHit = false;
         attackHitbox.body.enable = false;
+        player.setScale(5.0);
         player.setTexture('knight_idle');
         player.play('knight_idle_anim', true);
     }
 
-    // Phaser emite el evento 'animationcomplete' cuando una animación sin loop termina.
-    // Lo usamos para detectar cuándo terminó el ataque y volver al estado idle.
     player.on('animationcomplete', (anim) => {
-        if (anim.key === 'knight_attack_anim') {
+        if (anim.key === 'knight_attack_anim' || anim.key === 'knight_attack2_anim') {
             resetToIdle();
         }
     });
 
     // ── ATAQUE ────────────────────────────────────────────────────────────────────────
     player.attack = () => {
-        // Si ya está atacando, no hace nada (evita spam de ataques).
         if (player.isAttacking) return;
-
         player.isAttacking = true;
-
-        // Activa la hitbox para que pueda golpear al enemigo.
         attackHitbox.body.enable = true;
-
-        // Cambia al spritesheet de ataque y reproduce la animación una sola vez (repeat: 0).
-        player.setTexture('knight_attack');
-        player.play('knight_attack_anim', true);
+        player.setScale(7.0);
+        player.setTexture('knight_attack2');
+        player.play('knight_attack2_anim', true);
     };
 
     // ── MOVIMIENTO ────────────────────────────────────────────────────────────────────
@@ -137,6 +131,7 @@ export default function createPlayer(scene, x, y, config = {}) {
         } else if (input.block) {
             player.isBlocking = true;
             body.setVelocity(0, 0);
+            player.setScale(5.0);
             if (player.anims.currentAnim?.key !== 'knight_defend_anim') {
                 player.setTexture('knight_defend');
                 player.play('knight_defend_anim', true);
@@ -156,11 +151,13 @@ export default function createPlayer(scene, x, y, config = {}) {
             body.setVelocity(vx * player.speed, 0);
 
             if (vx !== 0) {
-                if (player.anims.currentAnim?.key !== 'knight_walk_anim') {
-                    player.setTexture('knight_walk');
-                    player.play('knight_walk_anim', true);
+                if (player.anims.currentAnim?.key !== 'knight_run_anim') {
+                    player.setScale(7.0);
+                    player.setTexture('knight_run');
+                    player.play('knight_run_anim', true);
                 }
             } else if (player.anims.currentAnim?.key !== 'knight_idle_anim') {
+                player.setScale(5.0);
                 player.setTexture('knight_idle');
                 player.play('knight_idle_anim', true);
             }

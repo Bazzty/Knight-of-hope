@@ -33,6 +33,9 @@ export default class DungeonScene extends Phaser.Scene {
         this.load.spritesheet('knight_death', 'assets/player/knight-death.png', { frameWidth: 96, frameHeight: 84 });
         this.load.spritesheet('knight_idle', 'assets/player/knight-idle.png', { frameWidth: 96, frameHeight: 84 });
         this.load.spritesheet('knight_defend', 'assets/player/knight-defend.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_run', 'assets/player/movimientoFinal.png', { frameWidth: 69, frameHeight: 69 });
+        this.load.spritesheet('knight_attack2', 'assets/player/Ataquefinal.png', { frameWidth: 69, frameHeight: 92 });
+        this.load.spritesheet('knight_death2', 'assets/player/muerteCaballero.png', { frameWidth: 69, frameHeight: 138 });
 
         // Carga la música general (Phaser detectará si usa el OGG o el MP3 según el navegador)
         this.load.audio('musicforscenes', [
@@ -96,6 +99,15 @@ export default class DungeonScene extends Phaser.Scene {
         }
         if (!this.anims.exists('knight_death_anim')) {
             this.anims.create({ key: 'knight_death_anim', frames: this.anims.generateFrameNumbers('knight_death', { start: 0, end: 11 }), frameRate: 8, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_run_anim')) {
+            this.anims.create({ key: 'knight_run_anim', frames: this.anims.generateFrameNumbers('knight_run', { start: 0, end: 15 }), frameRate: 12, repeat: -1 });
+        }
+        if (!this.anims.exists('knight_attack2_anim')) {
+            this.anims.create({ key: 'knight_attack2_anim', frames: this.anims.generateFrameNumbers('knight_attack2', { start: 0, end: 11 }), frameRate: 14, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_death2_anim')) {
+            this.anims.create({ key: 'knight_death2_anim', frames: this.anims.generateFrameNumbers('knight_death2', { start: 0, end: 7 }), frameRate: 8, repeat: 0 });
         }
 
         // HUD de vida — idéntico en todas las salas.
@@ -161,21 +173,20 @@ export default class DungeonScene extends Phaser.Scene {
 
         this.player.setVelocity(0, 0);
         this.player.anims.stop();
-        this.player.setTexture('knight_death');
         this.player.setOrigin(0.5, 1);
-        this.player.setScale(5.0);
+        this.player.setScale(4.0);
+        this.player.setTexture('knight_death2');
         this.player.body.enable = false;
         this.player.alpha = 1;
-        this.player.play('knight_death_anim');
+        this.player.play('knight_death2_anim');
 
         // Muestra el UI cuando termina la animación.
         this.player.once('animationcomplete', (anim) => {
-            if (anim.key !== 'knight_death_anim') return;
+            if (anim.key !== 'knight_death2_anim') return;
             this.showGameOverUI();
         });
 
-        // Fallback: si el evento no dispara (bug de Phaser al reiniciar rápido), muestra igual.
-        this.time.delayedCall(1200, () => {
+        this.time.delayedCall(1300, () => {
             if (this.gameOver) this.showGameOverUI();
         });
     }

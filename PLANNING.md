@@ -113,3 +113,16 @@
 
 ### Lo que no se logró y el motivo
 > Se completaron todas las tareas planificadas para esta semana.
+
+## Tareas de mejoras futuras FRONTEND
+- [] Vista: Mejorar Hitbox
+- [] Aumentar niveles
+- [] Colocar barra de vida a personaje jugador
+- [] KnockBack a jugador y enemigos
+- [] Agregar configuración y salida 
+- [] Disminuir los efectos visuales
+- [] Ajustar Visualizacion navegador
+- [] Intercambio de idiomas Español-Inglés
+- [] Intrucciones de jugabilidad
+- [] Pulir movimientos de los personajes
+ 

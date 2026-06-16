@@ -132,7 +132,7 @@ export default class GameScene extends DungeonScene {
         });
 
         this.physics.add.overlap(this.enemigoAttackHitbox, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.enemigo?.x);
         });
 
         // ── OVERLAPS ESQUELETO ────────────────────────────────────────────────────────
@@ -163,7 +163,7 @@ export default class GameScene extends DungeonScene {
         });
 
         this.physics.add.overlap(this.skeleAttackHitbox, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.skele?.x);
         });
 
         this.showDialogue([
@@ -195,7 +195,7 @@ export default class GameScene extends DungeonScene {
         ]);
     }
 
-    getRoomTitle() { return 'ROOM 1'; }
+    getRoomTitle() { return this.t('ROOM 1', 'SALA 1'); }
 
     updateEnemigoHpBar() {
         if (!this.enemigoHpBarFill || !this.enemigo) return;
@@ -222,7 +222,8 @@ export default class GameScene extends DungeonScene {
             if (this.enemigo.isAttacking) {
                 this.enemigo.setVelocityX(0);
             } else if (Math.abs(distanciaX) > 160) {
-                this.enemigo.setVelocityX(distanciaX > 0 ? 80 : -80);
+                const targetVx = distanciaX > 0 ? 80 : -80;
+                this.enemigo.setVelocityX(Phaser.Math.Linear(this.enemigo.body.velocity.x, targetVx, 0.18));
                 this.enemigo.setFlipX(distanciaX < 0);
                 this.enemigo.play('enemigo_walk_anim', true);
             } else {
@@ -258,7 +259,8 @@ export default class GameScene extends DungeonScene {
             if (this.skele.isAttacking) {
                 this.skele.setVelocityX(0);
             } else if (Math.abs(dxs) > 180) {
-                this.skele.setVelocityX(dxs > 0 ? 50 : -50);
+                const targetVxS = dxs > 0 ? 50 : -50;
+                this.skele.setVelocityX(Phaser.Math.Linear(this.skele.body.velocity.x, targetVxS, 0.18));
                 this.skele.setFlipX(dxs < 0);
                 this.skele.play('skeleton_walk_anim', true);
             } else {

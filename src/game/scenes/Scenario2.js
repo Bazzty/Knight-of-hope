@@ -140,7 +140,7 @@ export default class Scenario2 extends DungeonScene {
         });
 
         this.physics.add.overlap(this.slimeAttackHitbox, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.slime?.x);
         });
 
         // ── OVERLAPS SLIME 2 ──────────────────────────────────────────────────────────
@@ -175,11 +175,11 @@ export default class Scenario2 extends DungeonScene {
         });
 
         this.physics.add.overlap(this.slimeAttackHitbox2, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.slime2?.x);
         });
     }
 
-    getRoomTitle() { return 'ROOM 2'; }
+    getRoomTitle() { return this.t('ROOM 2', 'SALA 2'); }
 
     updateSlimeHpBar() {
         if (!this.slimeHpBarFill || !this.slime) return;
@@ -209,7 +209,8 @@ export default class Scenario2 extends DungeonScene {
             if (this.slime.isAttacking) {
                 this.slime.setVelocityX(0);
             } else if (Math.abs(distanceX) > 120) {
-                this.slime.setVelocityX(distanceX > 0 ? speed : -speed);
+                const targetVx1 = distanceX > 0 ? speed : -speed;
+                this.slime.setVelocityX(Phaser.Math.Linear(this.slime.body.velocity.x, targetVx1, 0.18));
                 this.slime.setFlipX(distanceX < 0);
                 this.slime.play('slime_idle_anim', true);
             } else {
@@ -241,7 +242,8 @@ export default class Scenario2 extends DungeonScene {
             if (this.slime2.isAttacking) {
                 this.slime2.setVelocityX(0);
             } else if (Math.abs(distanceX2) > 120) {
-                this.slime2.setVelocityX(distanceX2 > 0 ? speed : -speed);
+                const targetVx2 = distanceX2 > 0 ? speed : -speed;
+                this.slime2.setVelocityX(Phaser.Math.Linear(this.slime2.body.velocity.x, targetVx2, 0.18));
                 this.slime2.setFlipX(distanceX2 < 0);
                 this.slime2.play('slime_idle_anim', true);
             } else {

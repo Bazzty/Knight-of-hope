@@ -115,14 +115,14 @@
 > Se completaron todas las tareas planificadas para esta semana.
 
 ## Tareas de mejoras futuras FRONTEND
-- [ ] Vista: Mejorar Hitbox
+- [x] Vista: Mejorar Hitbox
 - [ ] Aumentar niveles
-- [ ] Colocar barra de vida a personaje jugador
-- [ ] KnockBack a jugador y enemigos
-- [ ] Agregar configuración y salida 
-- [ ] Disminuir los efectos visuales
-- [ ] Ajustar Visualizacion navegador
+- [x] Colocar barra de vida a personaje jugador
+- [x] KnockBack a jugador y enemigos
+- [x] Agregar configuración y salida 
+- [x] Disminuir los efectos visuales
+- [x] Ajustar Visualizacion navegador
 - [ ] Intercambio de idiomas Español-Inglés
-- [ ] Intrucciones de jugabilidad
-- [ ] Pulir movimientos de los personajes
+- [x] Intrucciones de jugabilidad
+- [x] Pulir movimientos de los personajes
  

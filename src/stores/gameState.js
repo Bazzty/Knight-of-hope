@@ -7,10 +7,14 @@ export const useGameStore = defineStore('game', {
     roomCount: 0,
     playerDamage: 1,
     playerSpeed: 150,
+    language: 'en',
   }),
   actions: {
     setHp(value) {
       this.hp = value
+    },
+    setLanguage(lang) {
+      this.language = lang
     },
     reset() {
       this.maxHp = 10
@@ -18,6 +22,7 @@ export const useGameStore = defineStore('game', {
       this.roomCount = 0
       this.playerDamage = 1
       this.playerSpeed = 150
+      // language persists across runs
     },
     incrementRoom() {
       this.roomCount++

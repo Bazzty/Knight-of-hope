@@ -1,8 +1,13 @@
 # PLANNING.md — Knight of Hope
 
-**Integrantes:** Bastian Contreras · [Ignacio Ovalle]  
-**Repositorio:** https://github.com/Bazzty/Knight-of-hope  
-**Entrega final:** 28 de mayo de 2026  
+**Integrantes:** Bastian Contreras · Ignacio Ovalle
+**Repositorio:** https://github.com/Bazzty/Knight-of-hope
+
+---
+
+# Parte 1 — Solemne 2
+
+**Entrega final:** 28 de mayo de 2026
 
 ---
 
@@ -29,7 +34,7 @@
 
 ---
 
-## Semana 2 — Mecánicas base 
+## Semana 2 — Mecánicas base
 
 ### Tareas planificadas
 - [x] Crear Vista de juego y modelos
@@ -83,7 +88,7 @@
 
 ---
 
-## Semana 4 — Pulido y entrega 
+## Semana 4 — Pulido y entrega
 
 ### Tareas planificadas
 - [x] Docker: crear `Dockerfile` y probar localmente
@@ -119,10 +124,82 @@
 - [ ] Aumentar niveles
 - [ ] Colocar barra de vida a personaje jugador
 - [ ] KnockBack a jugador y enemigos
-- [ ] Agregar configuración y salida 
+- [ ] Agregar configuración y salida
 - [ ] Disminuir los efectos visuales
 - [ ] Ajustar Visualizacion navegador
 - [ ] Intercambio de idiomas Español-Inglés
 - [ ] Intrucciones de jugabilidad
 - [ ] Pulir movimientos de los personajes
- 
+
+---
+
+---
+
+# Parte 2 — Solemne 3
+
+**Entrega final:** 02 de julio de 2026
+
+---
+
+## Semana 1 — Replanificación, setup del backend y autenticación
+
+### Tareas planificadas
+- [ ] Actualizar `DESIGN.md` con la arquitectura fullstack (frontend, API REST, MongoDB, servicio externo)
+- [ ] Actualizar `PLANNING.md` con la nueva planificación por semana
+- [ ] Estructurar el repositorio con carpetas `frontend/` y `backend/`
+- [ ] Inicializar el proyecto backend (Node.js + Express + pnpm)
+- [ ] Configurar conexión a MongoDB 
+- [ ] Configurar GitHub Actions (`.github/workflows/main.yml`): linter y pruebas unitarias de frontend y backend en cada push
+- [ ] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
+- [ ] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
+- [ ] Endpoint `POST /api/auth/login` — login con emisión de JWT
+- [ ] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
+- [ ] Middleware de autenticación para rutas protegidas
+- [ ] Pantalla de registro e inicio de sesión en el frontend (Vue)
+- [ ] Integrar token JWT en el frontend (almacenamiento y envío en headers)
+
+### Lo que se logró completar
+> _(completar al finalizar la semana)_
+
+### Lo que no se logró y el motivo
+> _(completar al finalizar la semana)_
+
+---
+
+## Semana 2 — Progreso persistente, mejoras S2 y servicio externo 
+
+### Tareas planificadas
+- [ ] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
+- [ ] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
+- [ ] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
+- [ ] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
+- [ ] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
+- [ ] Integrar el servicio REST externo elegido (definido en `DESIGN.md`)
+- [ ] Pruebas unitarias del backend: endpoints de auth y progreso
+- [ ] Pruebas unitarias del frontend (nuevos componentes de auth y progreso)
+
+### Lo que se logró completar
+> _(completar al finalizar la semana)_
+
+### Lo que no se logró y el motivo
+> _(completar al finalizar la semana)_
+
+---
+
+## Semana 3 — Docker, CI/CD y entrega final 
+
+### Tareas planificadas
+- [ ] `Dockerfile` para el **frontend** (build Vue + nginx)
+- [ ] `Dockerfile` para el **backend** (Node.js)
+- [ ] `compose.yml` que levante los tres servicios: frontend, backend y MongoDB
+- [ ] Actualizar GitHub Actions: agregar job de build y push de **ambas** imágenes a DockerHub
+- [ ] Subir imagen del backend a DockerHub
+- [ ] Actualizar `README.md`: instrucciones de ejecución local, Docker Compose y links a DockerHub
+- [ ] Pruebas finales end-to-end en Chrome, Firefox y Safari
+- [ ] Verificar que `PLANNING.md` esté actualizado semana a semana
+
+### Lo que se logró completar
+> _(completar al finalizar la semana)_
+
+### Lo que no se logró y el motivo
+> _(completar al finalizar la semana)_

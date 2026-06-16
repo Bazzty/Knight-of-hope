@@ -165,7 +165,7 @@ export default class Scenario3 extends DungeonScene {
         });
 
         this.physics.add.overlap(this.slimeAttackHitbox, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.slime?.x);
         });
 
         // ── OVERLAPS SLIME 2 ──────────────────────────────────────────────────────────
@@ -196,7 +196,7 @@ export default class Scenario3 extends DungeonScene {
         });
 
         this.physics.add.overlap(this.slimeAttackHitbox2, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.slime2?.x);
         });
 
         // ── OVERLAPS ESQUELETO ────────────────────────────────────────────────────────
@@ -227,11 +227,11 @@ export default class Scenario3 extends DungeonScene {
         });
 
         this.physics.add.overlap(this.skeleAttackHitbox, this.player, () => {
-            if (!this.gameOver) this.handlePlayerTakeDamage(1);
+            if (!this.gameOver) this.handlePlayerTakeDamage(1, this.skele?.x);
         });
     }
 
-    getRoomTitle() { return 'ROOM 3'; }
+    getRoomTitle() { return this.t('ROOM 3', 'SALA 3'); }
 
     updateSlimeHpBar() {
         if (!this.slimeHpBarFill || !this.slime) return;
@@ -263,7 +263,8 @@ export default class Scenario3 extends DungeonScene {
             if (this.slime.isAttacking) {
                 this.slime.setVelocityX(0);
             } else if (Math.abs(dx) > 120) {
-                this.slime.setVelocityX(dx > 0 ? slimeSpeed : -slimeSpeed);
+                const tvx1 = dx > 0 ? slimeSpeed : -slimeSpeed;
+                this.slime.setVelocityX(Phaser.Math.Linear(this.slime.body.velocity.x, tvx1, 0.18));
                 this.slime.setFlipX(dx < 0);
                 this.slime.play('slime_idle_anim', true);
             } else {
@@ -291,7 +292,8 @@ export default class Scenario3 extends DungeonScene {
             if (this.slime2.isAttacking) {
                 this.slime2.setVelocityX(0);
             } else if (Math.abs(dx2) > 120) {
-                this.slime2.setVelocityX(dx2 > 0 ? slimeSpeed : -slimeSpeed);
+                const tvx2 = dx2 > 0 ? slimeSpeed : -slimeSpeed;
+                this.slime2.setVelocityX(Phaser.Math.Linear(this.slime2.body.velocity.x, tvx2, 0.18));
                 this.slime2.setFlipX(dx2 < 0);
                 this.slime2.play('slime_idle_anim', true);
             } else {
@@ -324,7 +326,8 @@ export default class Scenario3 extends DungeonScene {
             if (this.skele.isAttacking) {
                 this.skele.setVelocityX(0);
             } else if (Math.abs(dxs) > 180) {
-                this.skele.setVelocityX(dxs > 0 ? 70 : -70);
+                const tvxs = dxs > 0 ? 70 : -70;
+                this.skele.setVelocityX(Phaser.Math.Linear(this.skele.body.velocity.x, tvxs, 0.18));
                 this.skele.setFlipX(dxs < 0);
                 this.skele.play('skeleton_walk_anim', true);
             } else {

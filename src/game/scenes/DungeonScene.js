@@ -17,11 +17,14 @@ export default class DungeonScene extends Phaser.Scene {
         this.attackKey = null;
         this.blockKey = null;
         this.hpText = null;
+        this.hpBarBg = null;
+        this.hpBarFill = null;
         this.store = null;
         this.gameOver = false;
         this.gameOverText = null;
         this.continueText = null;
         this.dialogueActive = false;
+        this._dialogueAdvance = null;
     }
 
     // ── PRELOAD ───────────────────────────────────────────────────────────────────────
@@ -63,6 +66,8 @@ export default class DungeonScene extends Phaser.Scene {
         this.gameOver = false;
         this.gameOverText = null;
         this.continueText = null;
+        this.dialogueActive = false;
+        this._dialogueAdvance = null;
         this._lastLeftTap = 0;
         this._lastRightTap = 0;
         this._sprintLeft = false;
@@ -122,13 +127,15 @@ export default class DungeonScene extends Phaser.Scene {
             this.anims.create({ key: 'knight_hurt_anim', frames: this.anims.generateFrameNumbers('knight_hurt', { start: 0, end: 3 }), frameRate: 12, repeat: 0 });
         }
 
-        // HUD de vida — idéntico en todas las salas.
-        this.hpText = this.add.text(20, 20, '', {
-            fontSize: '24px',
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 4
-        }).setDepth(200);
+        // HUD de vida — barra visual + texto numérico.
+        const barX = 20, barY = 20, barW = 220, barH = 22;
+        this.hpBarBg = this.add.rectangle(barX, barY, barW, barH, 0x222222)
+            .setOrigin(0, 0).setDepth(200).setStrokeStyle(2, 0x555555);
+        this.hpBarFill = this.add.rectangle(barX + 2, barY + 2, barW - 4, barH - 4, 0x22cc44)
+            .setOrigin(0, 0).setDepth(201);
+        this.hpText = this.add.text(barX + barW + 10, barY + barH / 2, '', {
+            fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0, 0.5).setDepth(202);
 
         // La subclase construye el resto: fondo, límites del mundo, enemigo, overlaps.
         this.createScene();
@@ -155,18 +162,31 @@ export default class DungeonScene extends Phaser.Scene {
 
     // ── HUD ───────────────────────────────────────────────────────────────────────────
     updateHpDisplay() {
-        if (!this.hpText || !this.player) return;
-        this.hpText.setText(`HP: ${this.player.hp} / ${this.player.maxHp}`);
+        if (!this.player || !this.hpBarFill) return;
+        const ratio = Math.max(0, this.player.hp / this.player.maxHp);
+        this.hpBarFill.width = 216 * ratio;
+        const color = ratio > 0.6 ? 0x22cc44 : ratio > 0.3 ? 0xeecc00 : 0xee2222;
+        this.hpBarFill.setFillStyle(color);
+        if (this.hpText) this.hpText.setText(`${this.player.hp} / ${this.player.maxHp}`);
     }
 
     // ── COMBATE: DAÑO AL JUGADOR ──────────────────────────────────────────────────────
     // Centraliza: aplicar daño + sincronizar store + actualizar HUD + manejar muerte.
     // Las subclases llaman esto desde sus overlaps en vez de duplicar esa lógica.
-    handlePlayerTakeDamage(amount) {
-        const died = this.player.takeDamage(amount);
+    handlePlayerTakeDamage(amount, sourceX = null, shake = true) {
+        const { died, tookDamage } = this.player.takeDamage(amount);
         this.store.setHp(this.player.hp);
         this.updateHpDisplay();
-        if (!this.gameOver) this.cameras.main.shake(150, 0.012);
+        if (!this.gameOver) {
+            if (shake) this.cameras.main.shake(150, 0.012);
+            if (tookDamage && !died && sourceX !== null) {
+                const dir = this.player.x < sourceX ? -1 : 1;
+                this.player.setVelocityX(dir * 280);
+                this.time.delayedCall(130, () => {
+                    if (this.player?.body) this.player.setVelocityX(0);
+                });
+            }
+        }
         if (died && !this.gameOver) this.handlePlayerDeath();
         return died;
     }
@@ -203,13 +223,18 @@ export default class DungeonScene extends Phaser.Scene {
         });
     }
 
+    // Helper de traducción: devuelve `es` si el idioma es español, `en` si no.
+    t(en, es) {
+        return this.store?.language === 'es' ? es : en;
+    }
+
     showGameOverUI() {
         if (this.gameOverText || this.continueText) return;
         const { width, height } = this.scale;
         this.gameOverText = this.add.text(width / 2, height / 2 - 24, 'GAME OVER', {
             fontSize: '64px', color: '#ff0000', stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5).setDepth(300);
-        this.continueText = this.add.text(width / 2, height / 2 + 250, 'Press SPACE to retry', {
+        this.continueText = this.add.text(width / 2, height / 2 + 250, this.t('Press SPACE to retry', 'ESPACIO para reintentar'), {
             fontSize: '26px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setDepth(300);
     }
@@ -217,13 +242,14 @@ export default class DungeonScene extends Phaser.Scene {
     // ── SALA COMPLETADA ───────────────────────────────────────────────────────────────
     // Persiste HP, incrementa contador de salas, muestra texto y gestiona upgrade/puerta.
     // nextScene: clave de la escena siguiente. Si es null, llama afterRoomCleared() en su lugar.
-    // text/color: mensaje de sala completada (por defecto "ROOM CLEARED!" en rojo).
-    onRoomCleared(nextScene, text = 'ROOM CLEARED!', color = '#f31313', skipUpgrade = false) {
+    // text/color: mensaje de sala completada (por defecto traducido según idioma).
+    onRoomCleared(nextScene, text = null, color = '#f31313', skipUpgrade = false) {
         this.store.setHp(this.player.hp);
         this.store.incrementRoom();
 
+        const displayText = text ?? this.t('ROOM CLEARED!', '¡SALA COMPLETADA!');
         const { width, height } = this.scale;
-        const roomText = this.add.text(width / 2, height / 3.5, text, {
+        const roomText = this.add.text(width / 2, height / 3.5, displayText, {
             fontSize: '60px', color, stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5).setDepth(300);
 
@@ -285,7 +311,12 @@ export default class DungeonScene extends Phaser.Scene {
     // Delega la lógica del enemigo en updateScene() de cada subclase.
     update() {
         if (!this.player || !this.cursors || !this.wasd) return;
-        if (this.dialogueActive) return;
+        if (this.dialogueActive) {
+            if (this._dialogueAdvance && Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+                this._dialogueAdvance();
+            }
+            return;
+        }
 
         if (this.gameOver) {
             if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
@@ -412,8 +443,9 @@ export default class DungeonScene extends Phaser.Scene {
         const show = () => {
             nameLabel.setText(lines[idx].speaker ?? '');
             nameLabel.setColor(nameColors[idx]);
-            bodyLabel.setText(lines[idx].text);
-            translationLabel.setText(lines[idx].translation ?? '');
+            const isEs = this.store?.language === 'es';
+            bodyLabel.setText(isEs ? (lines[idx].translation ?? lines[idx].text) : lines[idx].text);
+            translationLabel.setText(isEs ? '' : (lines[idx].translation ?? ''));
         };
         show();
 
@@ -421,7 +453,7 @@ export default class DungeonScene extends Phaser.Scene {
             idx++;
             if (idx >= lines.length) {
                 all.forEach(o => { try { o.destroy(); } catch (e) { /* ignore */ } });
-                this.input.keyboard.off('keydown-SPACE', advance);
+                this._dialogueAdvance = null;
                 this.dialogueActive = false;
                 onComplete?.();
             } else {
@@ -429,10 +461,9 @@ export default class DungeonScene extends Phaser.Scene {
             }
         };
 
-        // Delay antes de escuchar SPACE para evitar que el mismo keypress
-        // que activó el diálogo lo cierre al instante.
+        this._dialogueAdvance = null;
         this.time.delayedCall(500, () => {
-            this.input.keyboard.on('keydown-SPACE', advance);
+            this._dialogueAdvance = advance;
         });
     }
 

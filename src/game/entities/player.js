@@ -16,10 +16,11 @@ export default function createPlayer(scene, x, y, config = {}) {
 
     // Hitbox ajustada al cuerpo visible del caballero dentro del frame 96x84.
     player.setBodySize(55, 70);
-    player.setOffset(20, 10);
+    player.setOffset(20, 14);
 
     // Impide que el jugador salga de los límites definidos con physics.world.setBounds().
     player.setCollideWorldBounds(true);
+    player.setDragX(600);
 
     // Velocidad de movimiento en píxeles por segundo. Puede venir del store (upgrade velocidad).
     player.speed = config.speed ?? 150;
@@ -48,7 +49,7 @@ export default function createPlayer(scene, x, y, config = {}) {
     // ── HITBOX DE ATAQUE ──────────────────────────────────────────────────────────────
     // Rectángulo invisible que representa el área de daño del arma del jugador.
     // Usamos add.rectangle() para crear un objeto gráfico y luego le agregamos física.
-    const attackHitbox = scene.add.rectangle(x, y, 90, 60);
+    const attackHitbox = scene.add.rectangle(x, y, 110, 70);
 
     // physics.add.existing() añade un cuerpo físico dinámico al rectángulo.
     // Así Phaser puede detectar solapamiento (overlap) con otros objetos.
@@ -62,14 +63,14 @@ export default function createPlayer(scene, x, y, config = {}) {
 
     // ── SISTEMA DE DAÑO ──────────────────────────────────────────────────────────────
     player.takeDamage = (amount) => {
-        if (player.isInvincible || player.hp <= 0) return false;
-        if (player.isBlocking || player.blockKey?.isDown) return false;
+        if (player.isInvincible || player.hp <= 0) return { died: false, tookDamage: false };
+        if (player.isBlocking || player.blockKey?.isDown) return { died: false, tookDamage: false };
 
         // Math.max(0, ...) evita que la vida quede en negativo.
         player.hp = Math.max(0, player.hp - amount);
 
         if (player.hp <= 0) {
-            return true;
+            return { died: true, tookDamage: true };
         }
 
         player.isInvincible = true;
@@ -95,7 +96,7 @@ export default function createPlayer(scene, x, y, config = {}) {
             }
         });
 
-        return false;
+        return { died: false, tookDamage: true };
     };
 
     // ── ANIMACIÓN: VOLVER A IDLE ──────────────────────────────────────────────────────
@@ -173,8 +174,8 @@ export default function createPlayer(scene, x, y, config = {}) {
             }
         }
 
-        const hitOffsetX = player.flipX ? -115 : 115;
-        attackHitbox.body.reset(player.x + hitOffsetX, player.y - 170);
+        const hitOffsetX = player.flipX ? -130 : 130;
+        attackHitbox.body.reset(player.x + hitOffsetX, player.y - 210);
     };
 
     return player;

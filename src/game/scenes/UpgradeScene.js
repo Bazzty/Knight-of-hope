@@ -41,7 +41,9 @@ export default class UpgradeScene extends Phaser.Scene {
         this.tweens.add({ targets: overlay, alpha: 0.78, duration: 350 });
 
         // Título con fade-in.
-        const title = this.add.text(width / 2, 85, 'CHOOSE AN UPGRADE', {
+        const store = useGameStore();
+        const t = (en, es) => store.language === 'es' ? es : en;
+        const title = this.add.text(width / 2, 85, t('CHOOSE AN UPGRADE', 'ELIGE UNA MEJORA'), {
             fontSize: '34px',
             color: '#FFD700',
             stroke: '#000000',

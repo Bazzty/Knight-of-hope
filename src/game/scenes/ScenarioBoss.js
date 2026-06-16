@@ -92,7 +92,7 @@ export default class ScenarioBoss extends DungeonScene {
         this.spawnSlimeWave();
     }
 
-    getRoomTitle() { return 'BOSS ROOM'; }
+    getRoomTitle() { return this.t('BOSS ROOM', 'SALA FINAL'); }
 
     // ── OLEADA 1: SLIMES ─────────────────────────────────────────────────────────────
     spawnSlimeWave() {
@@ -145,7 +145,7 @@ export default class ScenarioBoss extends DungeonScene {
                 this.slime.setVelocityX((this.player.x < this.slime.x ? 1 : -1) * 200);
             }
         });
-        this.physics.add.overlap(this.slimeAttackHitbox, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1); });
+        this.physics.add.overlap(this.slimeAttackHitbox, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1, this.slime?.x); });
 
         this.physics.add.overlap(this.player.attackHitbox, this.slime2, () => {
             if (this.player.attackHasHit || !this.slime2?.active) return;
@@ -160,7 +160,7 @@ export default class ScenarioBoss extends DungeonScene {
                 this.slime2.setVelocityX((this.player.x < this.slime2.x ? 1 : -1) * 200);
             }
         });
-        this.physics.add.overlap(this.slimeAttackHitbox2, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1); });
+        this.physics.add.overlap(this.slimeAttackHitbox2, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1, this.slime2?.x); });
     }
 
     killSlime(n) {
@@ -194,7 +194,7 @@ export default class ScenarioBoss extends DungeonScene {
         const flash = this.add.rectangle(width / 2, height / 2, width, height, 0x001133).setDepth(250).setAlpha(0.5);
         this.tweens.add({ targets: flash, alpha: 0, duration: 600, onComplete: () => flash.destroy() });
 
-        const txt = this.add.text(width / 2, height / 2 - 60, '💀  MORE BONES ARISE  💀', {
+        const txt = this.add.text(width / 2, height / 2 - 60, this.t('💀  MORE BONES ARISE  💀', '💀  ¡MÁS HUESOS SE ALZAN!  💀'), {
             fontSize: '46px', color: '#cccccc', stroke: '#000000', strokeThickness: 8
         }).setOrigin(0.5).setDepth(300).setAlpha(0);
         this.tweens.add({ targets: txt, alpha: 1, duration: 400, hold: 1100, yoyo: true, onComplete: () => txt.destroy() });
@@ -253,7 +253,7 @@ export default class ScenarioBoss extends DungeonScene {
                 this.skele.setVelocityX((this.player.x < this.skele.x ? 1 : -1) * 180);
             }
         });
-        this.physics.add.overlap(this.skeleAttackHitbox, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1); });
+        this.physics.add.overlap(this.skeleAttackHitbox, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1, this.skele?.x); });
 
         this.physics.add.overlap(this.player.attackHitbox, this.skele2, () => {
             if (this.player.attackHasHit || !this.skele2?.active) return;
@@ -267,7 +267,7 @@ export default class ScenarioBoss extends DungeonScene {
                 this.skele2.setVelocityX((this.player.x < this.skele2.x ? 1 : -1) * 180);
             }
         });
-        this.physics.add.overlap(this.skeleAttackHitbox2, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1); });
+        this.physics.add.overlap(this.skeleAttackHitbox2, this.player, () => { if (!this.gameOver) this.handlePlayerTakeDamage(1, this.skele2?.x); });
     }
 
     killSkele(n) {
@@ -304,7 +304,7 @@ export default class ScenarioBoss extends DungeonScene {
         const flash = this.add.rectangle(width / 2, height / 2, width, height, 0x220000).setDepth(250).setAlpha(0.6);
         this.tweens.add({ targets: flash, alpha: 0, duration: 700, onComplete: () => flash.destroy() });
 
-        const bossText = this.add.text(width / 2, height / 2 - 60, '⚔  THE GUARDIAN AWAKENS  ⚔', {
+        const bossText = this.add.text(width / 2, height / 2 - 60, this.t('⚔  THE GUARDIAN AWAKENS  ⚔', '⚔  ¡EL GUARDIÁN DESPIERTA!  ⚔'), {
             fontSize: '42px', color: '#ff3300', stroke: '#000000', strokeThickness: 8
         }).setOrigin(0.5).setDepth(300).setAlpha(0);
         this.tweens.add({ targets: bossText, alpha: 1, duration: 400, hold: 1200, yoyo: true, onComplete: () => bossText.destroy() });
@@ -315,7 +315,7 @@ export default class ScenarioBoss extends DungeonScene {
         bossMusic.play();
         this.tweens.add({ targets: bossMusic, volume: 0.25, duration: 800 });
 
-        this.add.text(width / 2, 12, 'THE GUARDIAN', {
+        this.add.text(width / 2, 12, this.t('THE GUARDIAN', 'EL GUARDIÁN'), {
             fontSize: '18px', color: '#FFD700', stroke: '#000000', strokeThickness: 3
         }).setOrigin(0.5, 0).setDepth(202);
         this.enemigoHpBarBg   = this.add.rectangle(width / 2 - 300, 36, 600, 22, 0x111111).setOrigin(0, 0).setDepth(200);
@@ -369,7 +369,7 @@ export default class ScenarioBoss extends DungeonScene {
                     if (this.enemigoHpBarBg) { this.enemigoHpBarBg.destroy(); this.enemigoHpBarBg = null; }
                     if (this.enemigoHpBarFill) { this.enemigoHpBarFill.destroy(); this.enemigoHpBarFill = null; }
 
-                    this.onRoomCleared(null, 'BOSS DEFEATED!', '#FFD700', true);
+                    this.onRoomCleared(null, this.t('BOSS DEFEATED!', '¡JEFE DERROTADO!'), '#FFD700', true);
                 } else {
                     this.enemigo.setTint(0xff5555);
                     this.time.delayedCall(90, () => {
@@ -381,7 +381,7 @@ export default class ScenarioBoss extends DungeonScene {
             });
 
             this.physics.add.overlap(this.enemigoAttackHitbox, this.player, () => {
-                if (!this.gameOver) this.handlePlayerTakeDamage(this.bossPhase3 ? 3 : (this.bossPhase2 ? 2 : 1));
+                if (!this.gameOver) this.handlePlayerTakeDamage(this.bossPhase3 ? 3 : (this.bossPhase2 ? 2 : 1), this.enemigo?.x, false);
             });
         });
     }
@@ -401,7 +401,7 @@ export default class ScenarioBoss extends DungeonScene {
         const flash = this.add.rectangle(width / 2, height / 2, width, height, 0xff0000).setDepth(250).setAlpha(0.4);
         this.tweens.add({ targets: flash, alpha: 0, duration: 500, onComplete: () => flash.destroy() });
 
-        const rage = this.add.text(width / 2, height / 2 - 80, 'RAGE MODE!', {
+        const rage = this.add.text(width / 2, height / 2 - 80, this.t('RAGE MODE!', '¡MODO RABIA!'), {
             fontSize: '56px', color: '#ff3300', stroke: '#000000', strokeThickness: 8
         }).setOrigin(0.5).setDepth(300).setAlpha(0);
         this.tweens.add({ targets: rage, alpha: 1, duration: 300, hold: 700, yoyo: true, onComplete: () => rage.destroy() });
@@ -476,7 +476,7 @@ export default class ScenarioBoss extends DungeonScene {
             this.spawnHitBurst(this.enemigo.x - 80, this.enemigo.y - 120, [0xff2200, 0xffffff, 0xff8800]);
             this.spawnHitBurst(this.enemigo.x + 80, this.enemigo.y - 120, [0xff2200, 0xffffff, 0xff8800]);
 
-            const unleashed = this.add.text(width / 2, height / 2 - 80, '— UNLEASHED —', {
+            const unleashed = this.add.text(width / 2, height / 2 - 80, this.t('— UNLEASHED —', '— DESATADO —'), {
                 fontSize: '58px', color: '#ff0000', stroke: '#000000', strokeThickness: 10
             }).setOrigin(0.5).setDepth(300).setAlpha(0);
             this.tweens.add({ targets: unleashed, alpha: 1, duration: 250, hold: 1000, yoyo: true, onComplete: () => unleashed.destroy() });
@@ -553,13 +553,13 @@ export default class ScenarioBoss extends DungeonScene {
 
     showEndGame() {
         const { width, height } = this.scale;
-        this.add.text(width / 2, height / 2 - 60, 'YOU WIN!', {
+        this.add.text(width / 2, height / 2 - 60, this.t('YOU WIN!', '¡GANASTE!'), {
             fontSize: '72px', color: '#FFD700', stroke: '#000000', strokeThickness: 6
         }).setOrigin(0.5).setDepth(300);
-        this.add.text(width / 2, height / 2 + 80, 'Press SPACE to play again', {
+        this.add.text(width / 2, height / 2 + 80, this.t('Press SPACE to play again', 'ESPACIO para volver a jugar'), {
             fontSize: '26px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5).setDepth(300);
-        this.input.keyboard.once('keydown-SPACE', () => { this.scene.start('GameScene'); });
+        this.gameOver = true;
     }
 
     updateScene() {

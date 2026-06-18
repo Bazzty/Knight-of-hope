@@ -189,7 +189,6 @@
 ## Semana 3 — Docker, CI/CD y entrega final 
 
 ### Tareas planificadas
-- [ ] `Dockerfile` para el **frontend** (build Vue + nginx)
 - [ ] `Dockerfile` para el **backend** (Node.js)
 - [ ] `compose.yml` que levante los tres servicios: frontend, backend y MongoDB
 - [ ] Actualizar GitHub Actions: agregar job de build y push de **ambas** imágenes a DockerHub

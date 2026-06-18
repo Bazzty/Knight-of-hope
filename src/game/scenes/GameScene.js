@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { setupFireFrames, spawnFireTorch } from '../utils/fireEffect';
 import DungeonScene from './DungeonScene';
 
@@ -67,7 +68,7 @@ export default class GameScene extends DungeonScene {
         this.enemigo.maxHp = 5;
 
         const eBarW = 140, eBarH = 12;
-        this.enemigoHpBarBg   = this.add.rectangle(this.enemigo.x - eBarW / 2, this.enemigo.y - 250, eBarW, eBarH, 0x333333).setOrigin(0, 0).setDepth(200);
+        this.enemigoHpBarBg = this.add.rectangle(this.enemigo.x - eBarW / 2, this.enemigo.y - 250, eBarW, eBarH, 0x333333).setOrigin(0, 0).setDepth(200);
         this.enemigoHpBarFill = this.add.rectangle(this.enemigo.x - eBarW / 2, this.enemigo.y - 250, eBarW, eBarH, 0xee4444).setOrigin(0, 0).setDepth(201);
 
         this.enemigoAttackHitbox = this.add.rectangle(this.enemigo.x, this.enemigo.y, 95, 70);
@@ -95,7 +96,7 @@ export default class GameScene extends DungeonScene {
         this.skele.play('skeleton_idle_anim');
 
         const sBarW = 120, sBarH = 10;
-        this.skeleHpBarBg   = this.add.rectangle(this.skele.x - sBarW / 2, this.skele.y - 155, sBarW, sBarH, 0x333333).setOrigin(0, 0).setDepth(200);
+        this.skeleHpBarBg = this.add.rectangle(this.skele.x - sBarW / 2, this.skele.y - 155, sBarW, sBarH, 0x333333).setOrigin(0, 0).setDepth(200);
         this.skeleHpBarFill = this.add.rectangle(this.skele.x - sBarW / 2, this.skele.y - 155, sBarW, sBarH, 0xee4444).setOrigin(0, 0).setDepth(201);
 
         this.skeleAttackHitbox = this.add.rectangle(this.skele.x, this.skele.y, 95, 65);

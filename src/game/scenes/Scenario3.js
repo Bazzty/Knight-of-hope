@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import DungeonScene from './DungeonScene';
 
 // Sala 3 — dos slimes + un esqueleto. Transición al boss.

@@ -217,12 +217,12 @@ Una vez elegido el servicio, el backend expondrá un endpoint proxy (`GET /api/e
 | **Pinia** | Estado compartido Vue ↔ Phaser (HP, mejoras, auth) |
 | **Axios** | Cliente HTTP del frontend para consumir la API |
 | **Node.js + Express** | Servidor backend, API REST |
-| **Mongoose** | ODM para MongoDB |
+| **Mongoose** | ODM para MongoDB (sin relacion)|
 | **bcrypt** | Hash de contraseñas |
 | **jsonwebtoken** | Emisión y verificación de JWT |
 | **MongoDB** | Base de datos de usuarios y scores |
 | **API externa (por definir)** | Servicio REST externo — integración pendiente de análisis |
-| **Vite** | Bundler del frontend |
+| **Vite** | Bundler del frontend (empaquetador) | 
 | **pnpm** | Gestor de paquetes (frontend y backend) |
 | **Vitest** | Pruebas unitarias del frontend |
 | **Jest** | Pruebas unitarias del backend |

@@ -79,6 +79,6 @@ jobs:
       - name: Build y push imagen
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./frontend
           push: true
           tags: bazzty/knight-of-hope:latest

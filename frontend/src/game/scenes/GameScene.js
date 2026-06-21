@@ -235,7 +235,7 @@ export default class GameScene extends DungeonScene {
                     this.enemigo.lastAttackTime = tiempoActual;
                     this.enemigo.setTexture('enemigo_attack');
                     this.enemigo.play('enemigo_attack_anim', true);
-                    this.enemigoAttackHitbox.body.enable = true;
+                    this.time.delayedCall(400, () => { if (this.enemigo?.isAttacking && this.enemigoAttackHitbox?.body) this.enemigoAttackHitbox.body.enable = true; });
                     this.enemigo.setFlipX(distanciaX < 0);
                 } else if (this.enemigo.anims.currentAnim?.key !== 'enemigo_attack_anim') {
                     this.enemigo.anims.stop();
@@ -274,7 +274,7 @@ export default class GameScene extends DungeonScene {
                     this.skele.isAttacking = true;
                     this.skele.lastAttackTime = ts;
                     this.skele.play('skeleton_attack_anim', true);
-                    if (this.skeleAttackHitbox?.body) this.skeleAttackHitbox.body.enable = true;
+                    this.time.delayedCall(350, () => { if (this.skele?.isAttacking && this.skeleAttackHitbox?.body) this.skeleAttackHitbox.body.enable = true; });
                     this.skele.setFlipX(dxs < 0);
                 }
             }

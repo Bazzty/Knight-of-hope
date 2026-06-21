@@ -173,7 +173,7 @@ export default class DungeonScene extends Phaser.Scene {
     // ── COMBATE: DAÑO AL JUGADOR ──────────────────────────────────────────────────────
     // Centraliza: aplicar daño + sincronizar store + actualizar HUD + manejar muerte.
     // Las subclases llaman esto desde sus overlaps en vez de duplicar esa lógica.
-    handlePlayerTakeDamage(amount, sourceX = null, shake = true) {
+    handlePlayerTakeDamage(amount, sourceX = null, shake = false) {
         const { died, tookDamage } = this.player.takeDamage(amount);
         this.store.setHp(this.player.hp);
         this.updateHpDisplay();

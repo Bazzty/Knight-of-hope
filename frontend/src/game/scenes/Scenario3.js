@@ -274,7 +274,7 @@ export default class Scenario3 extends DungeonScene {
                 if (t - this.slime.lastAttackTime > 1100) {
                     this.slime.isAttacking = true; this.slime.lastAttackTime = t;
                     this.slime.play('slime_attack_anim', true);
-                    if (this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.enable = true;
+                    this.time.delayedCall(300, () => { if (this.slime?.isAttacking && this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.enable = true; });
                     this.slime.setFlipX(dx < 0);
                 }
             }
@@ -303,7 +303,7 @@ export default class Scenario3 extends DungeonScene {
                 if (t2 - this.slime2.lastAttackTime > 1100) {
                     this.slime2.isAttacking = true; this.slime2.lastAttackTime = t2;
                     this.slime2.play('slime_attack_anim', true);
-                    if (this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.enable = true;
+                    this.time.delayedCall(300, () => { if (this.slime2?.isAttacking && this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.enable = true; });
                     this.slime2.setFlipX(dx2 < 0);
                 }
             }
@@ -340,7 +340,7 @@ export default class Scenario3 extends DungeonScene {
                 if (ts - this.skele.lastAttackTime > 2200) {
                     this.skele.isAttacking = true; this.skele.lastAttackTime = ts;
                     this.skele.play('skeleton_attack_anim', true);
-                    if (this.skeleAttackHitbox?.body) this.skeleAttackHitbox.body.enable = true;
+                    this.time.delayedCall(350, () => { if (this.skele?.isAttacking && this.skeleAttackHitbox?.body) this.skeleAttackHitbox.body.enable = true; });
                     this.skele.setFlipX(dxs < 0);
                 }
             }

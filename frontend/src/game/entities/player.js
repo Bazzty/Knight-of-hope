@@ -64,7 +64,11 @@ export default function createPlayer(scene, x, y, config = {}) {
     // ── SISTEMA DE DAÑO ──────────────────────────────────────────────────────────────
     player.takeDamage = (amount) => {
         if (player.isInvincible || player.hp <= 0) return { died: false, tookDamage: false };
-        if (player.isBlocking || player.blockKey?.isDown) return { died: false, tookDamage: false };
+        if (player.isBlocking || player.blockKey?.isDown) {
+            player.isInvincible = true;
+            scene.time.delayedCall(300, () => { player.isInvincible = false; });
+            return { died: false, tookDamage: false };
+        }
 
         // Math.max(0, ...) evita que la vida quede en negativo.
         player.hp = Math.max(0, player.hp - amount);

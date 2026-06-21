@@ -74,6 +74,7 @@ export default function createPlayer(scene, x, y, config = {}) {
         player.hp = Math.max(0, player.hp - amount);
 
         if (player.hp <= 0) {
+            player.isInvincible = true;
             return { died: true, tookDamage: true };
         }
 

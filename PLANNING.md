@@ -150,9 +150,9 @@
 - [x] Configurar GitHub Actions (`.github/workflows/ci.yml`): pruebas unitarias de frontend y backend en cada push
 - [x] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
 - [x] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
-- [ ] Endpoint `POST /api/auth/login` — login con emisión de JWT
+- [x] Endpoint `POST /api/auth/login` — login con emisión de JWT
 - [ ] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
-- [ ] Middleware de autenticación para rutas protegidas
+- [x] Middleware de autenticación para rutas protegidas
 - [ ] Pantalla de registro e inicio de sesión en el frontend (Vue)
 - [ ] Integrar token JWT en el frontend (almacenamiento y envío en headers)
 

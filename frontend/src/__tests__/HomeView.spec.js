@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
+import { createPinia } from 'pinia'
 import HomeView from '../views/HomeView.vue'
 
 // createMemoryHistory() simula el router sin necesitar una URL real del navegador.
@@ -46,23 +47,24 @@ describe('HomeView', () => {
         const router = makeRouter()
         await router.push('/')
         const wrapper = mount(HomeView, {
-            global: { plugins: [router] }
+            global: { plugins: [router, createPinia()] }
         })
         expect(wrapper.find('h1').text()).toBe('KNIGHT OF HOPE')
     })
 
-    // Verifica que los tres botones del menú existen en el DOM.
-    it('renderiza los botones PLAY, CONFIGURATIONS y QUIT', async () => {
+    // Verifica que los cuatro botones del menú existen en el DOM.
+    it('renderiza los botones PLAY, HOW TO PLAY, CONFIGURATIONS y QUIT', async () => {
         const router = makeRouter()
         await router.push('/')
         const wrapper = mount(HomeView, {
-            global: { plugins: [router] }
+            global: { plugins: [router, createPinia()] }
         })
-        const botones = wrapper.findAll('button')
-        expect(botones).toHaveLength(3)
+        const botones = wrapper.findAll('.botones .btn')
+        expect(botones).toHaveLength(4)
         expect(botones[0].text()).toBe('PLAY')
-        expect(botones[1].text()).toBe('CONFIGURATIONS')
-        expect(botones[2].text()).toBe('QUIT')
+        expect(botones[1].text()).toBe('HOW TO PLAY')
+        expect(botones[2].text()).toBe('CONFIGURATIONS')
+        expect(botones[3].text()).toBe('QUIT')
     })
 
     // Verifica que hacer click en PLAY navega a la ruta /game.
@@ -71,7 +73,7 @@ describe('HomeView', () => {
         const router = makeRouter()
         await router.push('/')
         const wrapper = mount(HomeView, {
-            global: { plugins: [router] }
+            global: { plugins: [router, createPinia()] }
         })
         const pushSpy = vi.spyOn(router, 'push')
         await wrapper.find('button').trigger('click')
@@ -81,17 +83,17 @@ describe('HomeView', () => {
         expect(pushSpy).toHaveBeenCalledWith('/game')
     })
 
-    // Verifica que CONFIGURATIONS muestra el texto "PRÓXIMAMENTE"
-    // y que desaparece después de 1800ms (comportamiento del setTimeout).
-    it('CONFIGURATIONS muestra el mensaje PRÓXIMAMENTE al hacer click', async () => {
+    // Verifica que CONFIGURATIONS abre el modal con opciones de música e idioma.
+    it('CONFIGURATIONS abre el modal de configuración', async () => {
         const router = makeRouter()
         await router.push('/')
         const wrapper = mount(HomeView, {
-            global: { plugins: [router] }
+            global: { plugins: [router, createPinia()] }
         })
-        const btnConfig = wrapper.findAll('button')[1]
+        const btnConfig = wrapper.findAll('.botones .btn')[2]
         await btnConfig.trigger('click')
-        expect(wrapper.text()).toContain('PRÓXIMAMENTE')
+        expect(wrapper.text()).toContain('CONFIGURATIONS')
+        expect(wrapper.find('input[type="range"]').exists()).toBe(true)
     })
 
 })

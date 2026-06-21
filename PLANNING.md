@@ -114,14 +114,12 @@
 - `Dockerfile` multi-etapa (Node 22 + nginx), `docker-compose.yml` y `.dockerignore` configurados
 - Imagen subida a DockerHub (`bazzty/knight-of-hope`)
 - `README.md` completo con instrucciones de desarrollo, Docker y CI/CD
-- Música y efectos de sonido agregados al juego
-
-### Lo que no se logró y el motivo
+- Música y efectos de sonido agregados al juego.
 > Se completaron todas las tareas planificadas para esta semana.
 
 ## Tareas de mejoras futuras FRONTEND
 - [x] Vista: Mejorar Hitbox
-- [x] Aumentar niveles
+- [ ] Aumentar niveles
 - [x] Colocar barra de vida a personaje jugador
 - [x] KnockBack a jugador y enemigos
 - [x] Agregar configuración y salida
@@ -148,7 +146,7 @@
 - [x] Actualizar `PLANNING.md` con la nueva planificación por semana
 - [x] Estructurar el repositorio con carpetas `frontend/` y `backend/`
 - [x] Inicializar el proyecto backend (Node.js + Express + pnpm)
-- [x] Configurar conexión a MongoDB
+- [x] Configurar conexión a MongoDB 
 - [ ] Configurar GitHub Actions (`.github/workflows/main.yml`): linter y pruebas unitarias de frontend y backend en cada push
 - [ ] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
 - [ ] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)

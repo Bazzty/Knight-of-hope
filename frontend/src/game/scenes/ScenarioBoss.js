@@ -575,7 +575,7 @@ export default class ScenarioBoss extends DungeonScene {
                 this.slime.setVelocityX(0);
                 if (this.slime.anims.currentAnim?.key === 'skeleton_walk_anim') this.slime.play('skeleton_idle_anim', true);
                 const t = this.time.now;
-                if (t - this.slime.lastAttackTime > 2200) { this.slime.isAttacking = true; this.slime.lastAttackTime = t; this.slime.play('skeleton_attack_anim', true); if (this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.enable = true; this.slime.setFlipX(dx < 0); }
+                if (t - this.slime.lastAttackTime > 2200) { this.slime.isAttacking = true; this.slime.lastAttackTime = t; this.slime.play('skeleton_attack_anim', true); this.time.delayedCall(350, () => { if (this.slime?.isAttacking && this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.enable = true; }); this.slime.setFlipX(dx < 0); }
             }
             this.slime.setVelocityY(0);
         }
@@ -591,7 +591,7 @@ export default class ScenarioBoss extends DungeonScene {
                 this.slime2.setVelocityX(0);
                 if (this.slime2.anims.currentAnim?.key === 'skeleton_walk_anim') this.slime2.play('skeleton_idle_anim', true);
                 const t2 = this.time.now;
-                if (t2 - this.slime2.lastAttackTime > 2200) { this.slime2.isAttacking = true; this.slime2.lastAttackTime = t2; this.slime2.play('skeleton_attack_anim', true); if (this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.enable = true; this.slime2.setFlipX(dx2 < 0); }
+                if (t2 - this.slime2.lastAttackTime > 2200) { this.slime2.isAttacking = true; this.slime2.lastAttackTime = t2; this.slime2.play('skeleton_attack_anim', true); this.time.delayedCall(350, () => { if (this.slime2?.isAttacking && this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.enable = true; }); this.slime2.setFlipX(dx2 < 0); }
             }
             this.slime2.setVelocityY(0);
         }
@@ -612,7 +612,7 @@ export default class ScenarioBoss extends DungeonScene {
                 sk.setVelocityX(0);
                 if (sk.anims.currentAnim?.key === 'skeleton_walk_anim') sk.play('skeleton_idle_anim', true);
                 const ts = this.time.now;
-                if (ts - sk.lastAttackTime > 1800) { sk.isAttacking = true; sk.lastAttackTime = ts; sk.play('skeleton_attack_anim', true); if (hb?.body) hb.body.enable = true; sk.setFlipX(dxs < 0); }
+                if (ts - sk.lastAttackTime > 1800) { sk.isAttacking = true; sk.lastAttackTime = ts; sk.play('skeleton_attack_anim', true); this.time.delayedCall(350, () => { if (sk?.isAttacking && hb?.body) hb.body.enable = true; }); sk.setFlipX(dxs < 0); }
             }
             sk.setVelocityY(0);
         }
@@ -653,7 +653,7 @@ export default class ScenarioBoss extends DungeonScene {
             if (tiempoActual - this.enemigo.lastAttackTime > cooldown) {
                 this.enemigo.isAttacking = true; this.enemigo.lastAttackTime = tiempoActual;
                 this.enemigo.setTexture('enemigo_attack'); this.enemigo.play('enemigo_attack_anim', true);
-                this.enemigoAttackHitbox.body.enable = true; this.enemigo.setFlipX(distanciaX < 0);
+                this.time.delayedCall(400, () => { if (this.enemigo?.isAttacking && this.enemigoAttackHitbox?.body) this.enemigoAttackHitbox.body.enable = true; }); this.enemigo.setFlipX(distanciaX < 0);
             } else if (this.enemigo.anims.currentAnim?.key !== 'enemigo_attack_anim') {
                 this.enemigo.anims.stop();
             }

@@ -220,7 +220,7 @@ export default class Scenario2 extends DungeonScene {
                     this.slime.isAttacking = true;
                     this.slime.lastAttackTime = timeNow;
                     this.slime.play('slime_attack_anim', true);
-                    if (this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.enable = true;
+                    this.time.delayedCall(300, () => { if (this.slime?.isAttacking && this.slimeAttackHitbox?.body) this.slimeAttackHitbox.body.enable = true; });
                     this.slime.setFlipX(distanceX < 0);
                 }
             }
@@ -253,7 +253,7 @@ export default class Scenario2 extends DungeonScene {
                     this.slime2.isAttacking = true;
                     this.slime2.lastAttackTime = timeNow2;
                     this.slime2.play('slime_attack_anim', true);
-                    if (this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.enable = true;
+                    this.time.delayedCall(300, () => { if (this.slime2?.isAttacking && this.slimeAttackHitbox2?.body) this.slimeAttackHitbox2.body.enable = true; });
                     this.slime2.setFlipX(distanceX2 < 0);
                 }
             }

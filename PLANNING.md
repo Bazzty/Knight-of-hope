@@ -147,9 +147,9 @@
 - [x] Estructurar el repositorio con carpetas `frontend/` y `backend/`
 - [x] Inicializar el proyecto backend (Node.js + Express + pnpm)
 - [x] Configurar conexión a MongoDB 
-- [ ] Configurar GitHub Actions (`.github/workflows/main.yml`): linter y pruebas unitarias de frontend y backend en cada push
-- [ ] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
-- [ ] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
+- [x] Configurar GitHub Actions (`.github/workflows/ci.yml`): pruebas unitarias de frontend y backend en cada push
+- [x] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
+- [x] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
 - [ ] Endpoint `POST /api/auth/login` — login con emisión de JWT
 - [ ] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
 - [ ] Middleware de autenticación para rutas protegidas

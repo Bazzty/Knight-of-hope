@@ -148,7 +148,7 @@
 - [x] Actualizar `PLANNING.md` con la nueva planificación por semana
 - [x] Estructurar el repositorio con carpetas `frontend/` y `backend/`
 - [x] Inicializar el proyecto backend (Node.js + Express + pnpm)
-- [x] Configurar conexión a MongoDB 
+- [x] Configurar conexión a MongoDB
 - [ ] Configurar GitHub Actions (`.github/workflows/main.yml`): linter y pruebas unitarias de frontend y backend en cada push
 - [ ] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
 - [ ] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)

@@ -170,7 +170,7 @@
 - Guard con `replace: true` para que el historial del navegador no permita volver a rutas protegidas sin sesión
 
 ### Lo que no se logró y el motivo
-- **Aplicar mejoras del feedback de la Solemne 2:** por temas de tiempo y prioridad se decidió postergar esta tarea. Se implementará durante la semana final junto al cierre del proyecto.
+- **Aplicar mejoras del feedback de la Solemne 2:** por temas de tiempo y prioridad se decidió postergar esta tarea. Se implementará durante la semana final junto al cierre del proyecto para "Aumento de niveles".
 
 ---
 

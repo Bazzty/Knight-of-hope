@@ -147,20 +147,30 @@
 - [x] Estructurar el repositorio con carpetas `frontend/` y `backend/`
 - [x] Inicializar el proyecto backend (Node.js + Express + pnpm)
 - [x] Configurar conexión a MongoDB 
-- [ ] Configurar GitHub Actions (`.github/workflows/main.yml`): linter y pruebas unitarias de frontend y backend en cada push
-- [ ] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
-- [ ] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
-- [ ] Endpoint `POST /api/auth/login` — login con emisión de JWT
+- [x] Configurar GitHub Actions (`.github/workflows/ci.yml`): pruebas unitarias de frontend y backend en cada push
+- [x] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
+- [x] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
+- [x] Endpoint `POST /api/auth/login` — login con emisión de JWT
 - [ ] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
-- [ ] Middleware de autenticación para rutas protegidas
-- [ ] Pantalla de registro e inicio de sesión en el frontend (Vue)
-- [ ] Integrar token JWT en el frontend (almacenamiento y envío en headers)
+- [x] Middleware de autenticación para rutas protegidas
+- [x] Pantalla de registro e inicio de sesión en el frontend (Vue)
+- [x] Integrar token JWT en el frontend (almacenamiento y envío en headers)
 
 ### Lo que se logró completar
-> _(completar al finalizar la semana)_
+- Modelo `User` en MongoDB con nombre, email y contraseña hasheada con bcrypt
+- Endpoints `POST /api/auth/register` y `POST /api/auth/login` con emisión de JWT
+- Autenticación implementada con HttpOnly Cookies (protección contra XSS): el token nunca es accesible desde JavaScript
+- Middleware `auth.js` para proteger rutas privadas, lee el token desde la cookie
+- Endpoint `POST /api/auth/logout` que limpia la cookie del servidor
+- CORS configurado con `credentials: true` para permitir el envío de cookies entre frontend y backend
+- Store de autenticación en Pinia (`stores/auth.js`): gestiona el usuario en `sessionStorage`, sin exponer el token
+- Pantalla de login/registro (`AuthView.vue`) en estilo pixel art, con toggle entre modos, mensajes de error y soporte ES/EN
+- Rutas protegidas con guard en Vue Router: `/home` y `/game` requieren sesión activa
+- `/` como pantalla principal de login; redirige a `/home` al autenticarse
+- Guard con `replace: true` para que el historial del navegador no permita volver a rutas protegidas sin sesión
 
 ### Lo que no se logró y el motivo
-> _(completar al finalizar la semana)_
+- **Aplicar mejoras del feedback de la Solemne 2:** por temas de tiempo y prioridad se decidió postergar esta tarea. Se implementará durante la semana final junto al cierre del proyecto.
 
 ---
 

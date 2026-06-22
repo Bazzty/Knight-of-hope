@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
 const authRoutes = require('./routes/authRoutes')
 
 const app = express()
@@ -16,9 +17,11 @@ app.use(cors({
         } else {
             callback(new Error('CORS: origen no permitido'))
         }
-    }
+    },
+    credentials: true,
 }))
 app.use(express.json())
+app.use(cookieParser())
 
 app.get('/', (req, res) => {
     res.send('¡Backend de Knight of Hope configurado correctamente!')

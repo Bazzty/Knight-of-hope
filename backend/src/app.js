@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const authRoutes = require('./routes/authRoutes')
+const gameProgressRoutes = require('./routes/gameProgressRoutes')
 
 const app = express()
 
@@ -28,5 +29,6 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/progress', gameProgressRoutes)
 
 module.exports = app

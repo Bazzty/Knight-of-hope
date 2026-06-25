@@ -177,9 +177,9 @@
 ## Semana 2 — Progreso persistente, mejoras S2 y servicio externo 
 
 ### Tareas planificadas
-- [ ] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
-- [ ] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
-- [ ] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
+- [x] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
+- [x] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
+- [x] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
 - [ ] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
 - [ ] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
 - [ ] Integrar el servicio REST externo elegido (definido en `DESIGN.md`)

@@ -37,6 +37,7 @@ const labels = computed(() => {
 })
 
 onMounted(() => {
+  store.loadProgress()
   const audioConfig = new Audio()
   const ext = audioConfig.canPlayType('audio/ogg') ? 'ogg' : 'mp3'
 

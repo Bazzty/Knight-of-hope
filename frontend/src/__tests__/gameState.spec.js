@@ -1,17 +1,16 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '../stores/gameState'
 
-// Antes de cada test se crea una instancia limpia de Pinia.
-// Esto evita que el estado de un test afecte al siguiente.
 beforeEach(() => {
     setActivePinia(createPinia())
+    global.fetch = vi.fn(() =>
+        Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
+    )
 })
 
 describe('gameState store', () => {
 
-    // Verifica que el store arranca con los valores correctos.
-    // Si alguien cambia un default sin querer, este test lo detecta.
     it('tiene los valores iniciales correctos', () => {
         const store = useGameStore()
         expect(store.hp).toBe(10)
@@ -19,10 +18,9 @@ describe('gameState store', () => {
         expect(store.roomCount).toBe(0)
         expect(store.playerDamage).toBe(1)
         expect(store.playerSpeed).toBe(150)
+        expect(store.mejorasActivas).toEqual([])
     })
 
-    // Verifica que reset() vuelve todo al estado inicial sin importar
-    // cuántas modificaciones se hayan hecho antes.
     it('reset() restaura todos los valores al estado inicial', () => {
         const store = useGameStore()
         store.setHp(3)
@@ -34,18 +32,15 @@ describe('gameState store', () => {
         expect(store.roomCount).toBe(0)
         expect(store.playerDamage).toBe(1)
         expect(store.playerSpeed).toBe(150)
+        expect(store.mejorasActivas).toEqual([])
     })
 
-    // Verifica que setHp() guarda el valor exacto que recibe.
-    // Es el mecanismo de persistencia de HP entre salas.
     it('setHp() actualiza el HP del jugador', () => {
         const store = useGameStore()
         store.setHp(6)
         expect(store.hp).toBe(6)
     })
 
-    // Verifica que incrementRoom() acumula correctamente el contador.
-    // roomCount controla cuándo aparece la pantalla de upgrades.
     it('incrementRoom() aumenta el contador de salas en 1 por llamada', () => {
         const store = useGameStore()
         store.incrementRoom()
@@ -53,29 +48,71 @@ describe('gameState store', () => {
         expect(store.roomCount).toBe(2)
     })
 
-    // Verifica que la mejora de salud sube maxHp y rellena HP parcialmente.
-    // El jugador llega herido (5 HP) y la mejora le suma 10, sin superar el nuevo maxHp.
     it('applyUpgrade("health") aumenta maxHp y rellena HP sin superar el máximo', () => {
         const store = useGameStore()
         store.setHp(5)
         store.applyUpgrade('health')
         expect(store.maxHp).toBe(20)
         expect(store.hp).toBe(15)
+        expect(store.mejorasActivas).toContain('health')
     })
 
-    // Verifica que la mejora de ataque suma exactamente 5 al daño base.
     it('applyUpgrade("attack") aumenta el daño del jugador en 5', () => {
         const store = useGameStore()
         store.applyUpgrade('attack')
         expect(store.playerDamage).toBe(6)
+        expect(store.mejorasActivas).toContain('attack')
     })
 
-    // Verifica que la mejora de velocidad aplica el 10% correctamente.
-    // Math.round(150 * 1.1) = 165
     it('applyUpgrade("speed") aumenta la velocidad un 10%', () => {
         const store = useGameStore()
         store.applyUpgrade('speed')
         expect(store.playerSpeed).toBe(165)
+        expect(store.mejorasActivas).toContain('speed')
+    })
+
+    it('loadProgress() restaura HP, sala y mejoras desde el backend', async () => {
+        const store = useGameStore()
+        const mockData = {
+            hp: 7,
+            salaActual: 2,
+            mejorasActivas: ['health', 'attack']
+        }
+        global.fetch = vi.fn(() =>
+            Promise.resolve(new Response(JSON.stringify(mockData), { status: 200 }))
+        )
+        await store.loadProgress()
+        expect(store.hp).toBe(7)
+        expect(store.maxHp).toBe(20)
+        expect(store.playerDamage).toBe(6)
+        expect(store.roomCount).toBe(2)
+        expect(store.mejorasActivas).toEqual(['health', 'attack'])
+    })
+
+    it('loadProgress() crea progreso por defecto si el backend responde 401', async () => {
+        const store = useGameStore()
+        global.fetch = vi.fn(() =>
+            Promise.resolve(new Response(JSON.stringify({}), { status: 401 }))
+        )
+        await store.loadProgress()
+        expect(store.hp).toBe(10)
+        expect(store.roomCount).toBe(0)
+        expect(store.mejorasActivas).toEqual([])
+    })
+
+    it('saveProgress() envía el estado actual al backend', async () => {
+        const store = useGameStore()
+        store.setHp(5)
+        store.incrementRoom()
+        store.applyUpgrade('speed')
+        await store.saveProgress()
+        const callArgs = global.fetch.mock.calls.at(-1)
+        expect(callArgs[0]).toContain('/api/progress/save')
+        expect(callArgs[1].method).toBe('POST')
+        const body = JSON.parse(callArgs[1].body)
+        expect(body.hp).toBe(5)
+        expect(body.salaActual).toBe(1)
+        expect(body.mejorasActivas).toContain('speed')
     })
 
 })

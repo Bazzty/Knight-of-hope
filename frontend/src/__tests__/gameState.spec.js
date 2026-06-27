@@ -15,7 +15,7 @@ describe('gameState store', () => {
         const store = useGameStore()
         expect(store.hp).toBe(10)
         expect(store.maxHp).toBe(10)
-        expect(store.roomCount).toBe(0)
+        expect(store.roomCount).toBe(1)
         expect(store.playerDamage).toBe(1)
         expect(store.playerSpeed).toBe(150)
         expect(store.mejorasActivas).toEqual([])
@@ -29,7 +29,7 @@ describe('gameState store', () => {
         store.reset()
         expect(store.hp).toBe(10)
         expect(store.maxHp).toBe(10)
-        expect(store.roomCount).toBe(0)
+        expect(store.roomCount).toBe(1)
         expect(store.playerDamage).toBe(1)
         expect(store.playerSpeed).toBe(150)
         expect(store.mejorasActivas).toEqual([])
@@ -43,9 +43,11 @@ describe('gameState store', () => {
 
     it('incrementRoom() aumenta el contador de salas en 1 por llamada', () => {
         const store = useGameStore()
-        store.incrementRoom()
+        expect(store.roomCount).toBe(1)
         store.incrementRoom()
         expect(store.roomCount).toBe(2)
+        store.incrementRoom()
+        expect(store.roomCount).toBe(3)
     })
 
     it('applyUpgrade("health") aumenta maxHp y rellena HP sin superar el máximo', () => {
@@ -89,15 +91,38 @@ describe('gameState store', () => {
         expect(store.mejorasActivas).toEqual(['health', 'attack'])
     })
 
-    it('loadProgress() crea progreso por defecto si el backend responde 401', async () => {
+    it('loadProgress() mantiene valores por defecto si el backend responde 401', async () => {
         const store = useGameStore()
         global.fetch = vi.fn(() =>
             Promise.resolve(new Response(JSON.stringify({}), { status: 401 }))
         )
+        store.reset()
         await store.loadProgress()
         expect(store.hp).toBe(10)
-        expect(store.roomCount).toBe(0)
+        expect(store.roomCount).toBe(1)
         expect(store.mejorasActivas).toEqual([])
+    })
+
+    it('hasSavedRun es true cuando roomCount > 1', () => {
+        const store = useGameStore()
+        store.incrementRoom()
+        expect(store.roomCount).toBe(2)
+        expect(store.hasSavedRun).toBe(true)
+    })
+
+    it('continueSceneName mapea roomCount correctamente (1-indexed)', () => {
+        const store = useGameStore()
+        expect(store.roomCount).toBe(1)
+        expect(store.continueSceneName).toBe('GameScene')
+        store.incrementRoom()
+        expect(store.roomCount).toBe(2)
+        expect(store.continueSceneName).toBe('Scenario2')
+        store.incrementRoom()
+        expect(store.roomCount).toBe(3)
+        expect(store.continueSceneName).toBe('Scenario3')
+        store.incrementRoom()
+        expect(store.roomCount).toBe(4)
+        expect(store.continueSceneName).toBe('ScenarioBoss')
     })
 
     it('saveProgress() envía el estado actual al backend', async () => {
@@ -111,7 +136,7 @@ describe('gameState store', () => {
         expect(callArgs[1].method).toBe('POST')
         const body = JSON.parse(callArgs[1].body)
         expect(body.hp).toBe(5)
-        expect(body.salaActual).toBe(1)
+        expect(body.salaActual).toBe(2)
         expect(body.mejorasActivas).toContain('speed')
     })
 

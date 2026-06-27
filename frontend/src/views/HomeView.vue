@@ -9,6 +9,7 @@ const store = useGameStore()
 const howToPlayVisible = ref(false)
 const configVisible = ref(false)
 const quitMessage = ref(false)
+const showContinueModal = ref(false)
 const musicVolume = ref(10)
 
 let menuMusic = null
@@ -33,11 +34,17 @@ const labels = computed(() => {
     close:        es ? 'CERRAR'        : 'CLOSE',
     back:         es ? 'VOLVER'        : 'BACK',
     closeBrowser: es ? 'Cierra esta pestaña del navegador para salir.' : 'Close this browser tab to exit.',
+    continueTitle: es ? 'PARTIDA GUARDADA' : 'SAVED RUN',
+    continueMsg: es
+      ? `Tienes una partida guardada en Sala ${store.roomCount}. ¿Qué deseas hacer?`
+      : `You have a saved run in Room ${store.roomCount}. What would you like to do?`,
+    continueBtn: es ? 'CONTINUAR' : 'CONTINUE',
+    newGameBtn: es ? 'EMPEZAR DE NUEVO' : 'NEW GAME',
   }
 })
 
-onMounted(() => {
-  store.loadProgress()
+onMounted(async () => {
+  await store.loadProgress()
   const audioConfig = new Audio()
   const ext = audioConfig.canPlayType('audio/ogg') ? 'ogg' : 'mp3'
 
@@ -84,6 +91,12 @@ function playButtonSfx() {
 
 async function play() {
   playButtonSfx()
+
+  if (store.hasSavedRun) {
+    showContinueModal.value = true
+    return
+  }
+
   try {
     const isTest = typeof import.meta !== 'undefined' && import.meta.env?.MODE === 'test'
     if (!isTest && typeof window !== 'undefined') {
@@ -118,10 +131,23 @@ function quit() {
   setTimeout(() => { quitMessage.value = true }, 300)
 }
 
+function continueRun() {
+  playButtonSfx()
+  store.setContinueRun(true)
+  router.push('/game')
+}
+
+function newGame() {
+  playButtonSfx()
+  store.reset()
+  router.push('/game')
+}
+
 function closeModal() {
   howToPlayVisible.value = false
   configVisible.value = false
   quitMessage.value = false
+  showContinueModal.value = false
 }
 </script>
 
@@ -195,6 +221,18 @@ function closeModal() {
       <div class="modal">
         <p class="quit-text">{{ labels.closeBrowser }}</p>
         <button class="btn btn--small" @click="closeModal">{{ labels.back }}</button>
+      </div>
+    </div>
+
+    <!-- CONTINUE SAVED RUN -->
+    <div v-if="showContinueModal" class="overlay">
+      <div class="modal continue-modal">
+        <h2 class="modal-title">{{ labels.continueTitle }}</h2>
+        <p class="continue-msg">{{ labels.continueMsg }}</p>
+        <div class="continue-buttons">
+          <button class="btn" @click="continueRun">{{ labels.continueBtn }}</button>
+          <button class="btn" @click="newGame">{{ labels.newGameBtn }}</button>
+        </div>
       </div>
     </div>
   </div>
@@ -412,5 +450,27 @@ function closeModal() {
   color: #cccccc;
   line-height: 1.8;
   margin: 0;
+}
+
+/* ── CONTINUE MODAL ─────────────────────────────────── */
+
+.continue-modal {
+  align-items: center;
+  text-align: center;
+}
+
+.continue-msg {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: #cccccc;
+  line-height: 1.8;
+  margin: 0 0 24px 0;
+}
+
+.continue-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
 }
 </style>

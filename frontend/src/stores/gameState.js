@@ -4,12 +4,21 @@ export const useGameStore = defineStore('game', {
   state: () => ({
     hp: 10,
     maxHp: 10,
-    roomCount: 0,
+    roomCount: 1,
     playerDamage: 1,
     playerSpeed: 150,
     language: 'en',
     mejorasActivas: [],
+    continueRun: false,
   }),
+
+  getters: {
+    hasSavedRun: (state) => state.roomCount > 1 && state.roomCount < 5,
+    continueSceneName: (state) => {
+      const map = ['GameScene', 'Scenario2', 'Scenario3', 'ScenarioBoss']
+      return map[state.roomCount - 1] || 'GameScene'
+    },
+  },
   actions: {
     setHp(value) {
       this.hp = value
@@ -21,10 +30,11 @@ export const useGameStore = defineStore('game', {
     reset() {
       this.maxHp = 10
       this.hp = 10
-      this.roomCount = 0
+      this.roomCount = 1
       this.playerDamage = 1
       this.playerSpeed = 150
       this.mejorasActivas = []
+      this.continueRun = false
       this.saveProgress()
       // language persists across runs
     },
@@ -69,6 +79,10 @@ export const useGameStore = defineStore('game', {
       } catch {
         console.warn('No se pudo cargar progreso')
       }
+    },
+
+    setContinueRun(value) {
+      this.continueRun = value
     },
 
     async saveProgress() {

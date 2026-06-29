@@ -177,20 +177,29 @@
 ## Semana 2 — Progreso persistente, mejoras S2 y servicio externo 
 
 ### Tareas planificadas
-- [ ] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
-- [ ] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
-- [ ] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
-- [ ] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
-- [ ] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
+- [x] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
+- [x] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
+- [x] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
+- [x] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
+- [x] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
 - [ ] Integrar el servicio REST externo elegido (definido en `DESIGN.md`)
 - [ ] Pruebas unitarias del backend: endpoints de auth y progreso
 - [ ] Pruebas unitarias del frontend (nuevos componentes de auth y progreso)
 
 ### Lo que se logró completar
-> _(completar al finalizar la semana)_
+- Modelo `GameProgress` en MongoDB con campos `usuario`, `salaActual`, `hp` y `mejorasActivas[]`
+- Endpoints `GET /api/progress` y `POST /api/progress/save` protegidos con middleware JWT
+- Store `gameState.js` actualizado con `loadProgress()` y `saveProgress()`, llamados automáticamente al cambiar HP, sala o mejoras
+- `loadProgress()` re-aplica las mejoras activas para reconstruir los stats del jugador correctamente
+- Al hacer PLAY se detecta si existe un run guardado y se ofrece continuar desde la sala guardada o empezar de nuevo
+- Guardado automático al salir del juego (sala actual, HP y mejoras activas)
+- Menú de pausa en el juego (tecla ESC): reanudar, controles, ajustes de volumen e idioma, y salir al menú principal
+- Los personajes se oscurecen visualmente al pausar para no tapar el menú
 
 ### Lo que no se logró y el motivo
-> _(completar al finalizar la semana)_
+- **Servicio REST externo:** no se alcanzó a integrar por falta de tiempo, se implementará en la semana final.
+- **Pruebas unitarias del backend:** no se realizaron durante esta semana, se implementarán en la semana final.
+- **Pruebas unitarias del frontend** (nuevos componentes de auth y progreso): no se realizaron durante esta semana, se implementarán en la semana final.
 
 ---
 

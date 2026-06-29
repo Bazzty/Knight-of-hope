@@ -1,5 +1,7 @@
 import { defineStore } from 'pinia'
 
+let _saveTimer = null
+
 export const useGameStore = defineStore('game', {
   state: () => ({
     hp: 10,
@@ -74,8 +76,8 @@ export const useGameStore = defineStore('game', {
           else if (mejora === 'attack') this.playerDamage += 5
           else if (mejora === 'speed') this.playerSpeed = Math.round(this.playerSpeed * 1.1)
         }
-        this.hp = Math.min(data.hp, this.maxHp)
-        this.roomCount = data.salaActual
+        this.hp = Math.min(data.hp ?? 10, this.maxHp)
+        this.roomCount = data.salaActual ?? 1
       } catch {
         console.warn('No se pudo cargar progreso')
       }
@@ -85,22 +87,25 @@ export const useGameStore = defineStore('game', {
       this.continueRun = value
     },
 
-    async saveProgress() {
-      try {
-        const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-        await fetch(`${API}/api/progress/save`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            hp: this.hp,
-            salaActual: this.roomCount,
-            mejorasActivas: this.mejorasActivas
+    saveProgress() {
+      clearTimeout(_saveTimer)
+      _saveTimer = setTimeout(async () => {
+        try {
+          const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+          await fetch(`${API}/api/progress/save`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              hp: this.hp,
+              salaActual: this.roomCount,
+              mejorasActivas: this.mejorasActivas
+            })
           })
-        })
-      } catch {
-        console.warn('No se pudo guardar progreso')
-      }
+        } catch {
+          console.warn('No se pudo guardar progreso')
+        }
+      }, 1500)
     },
   },
 })

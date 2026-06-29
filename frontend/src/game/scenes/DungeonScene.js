@@ -97,9 +97,10 @@ export default class DungeonScene extends Phaser.Scene {
         this.blockKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
         this.escapeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
         this.input.keyboard.addCapture(Phaser.Input.Keyboard.KeyCodes.ESC);
+        if (this._onEscDown) window.removeEventListener('keydown', this._onEscDown);
         this._onEscDown = (e) => { if (e.key === 'Escape') { e.preventDefault(); if (!this.gameOver) this.togglePause(); } };
         window.addEventListener('keydown', this._onEscDown);
-        this.events.on('shutdown', () => window.removeEventListener('keydown', this._onEscDown));
+        this.events.once('shutdown', () => window.removeEventListener('keydown', this._onEscDown));
 
         // Animaciones del knight — idénticas en todas las salas.
         // El guard !this.anims.exists() evita error al reiniciar la escena.
@@ -682,9 +683,8 @@ export default class DungeonScene extends Phaser.Scene {
 
     quitToMenu() {
         this.sound.stopAll();
-        this.store.setContinueRun(false);
         this.store.saveProgress();
-        this.scene.stop();
+        this.store.setContinueRun(false);
         window.dispatchEvent(new CustomEvent('koh-quit'));
     }
 }

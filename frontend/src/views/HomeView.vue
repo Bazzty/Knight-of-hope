@@ -52,9 +52,12 @@ onMounted(async () => {
   menuMusic.loop = true
   menuMusic.volume = musicVolume.value / 100
 
-  menuMusic.play().catch(error => {
-    console.warn('Autoplay bloqueado hasta la interacción del usuario:', error)
-  })
+  const playPromise = menuMusic.play()
+  if (playPromise !== undefined) {
+    playPromise.catch(error => {
+      console.warn('Autoplay bloqueado hasta la interacción del usuario:', error)
+    })
+  }
 
   buttonSfx = new Audio(`/assets/audio/music/sfx/buttom.${ext}`)
   buttonSfx.preload = 'auto'

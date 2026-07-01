@@ -1,12 +1,17 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useGameStore } from '../stores/gameState'
 
 beforeEach(() => {
     setActivePinia(createPinia())
+    vi.useFakeTimers()
     global.fetch = vi.fn(() =>
         Promise.resolve(new Response(JSON.stringify({}), { status: 200 }))
     )
+})
+
+afterEach(() => {
+    vi.useRealTimers()
 })
 
 describe('gameState store', () => {
@@ -130,7 +135,7 @@ describe('gameState store', () => {
         store.setHp(5)
         store.incrementRoom()
         store.applyUpgrade('speed')
-        await store.saveProgress()
+        await vi.runAllTimersAsync()
         const callArgs = global.fetch.mock.calls.at(-1)
         expect(callArgs[0]).toContain('/api/progress/save')
         expect(callArgs[1].method).toBe('POST')

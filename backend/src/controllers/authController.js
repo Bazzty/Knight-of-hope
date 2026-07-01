@@ -9,9 +9,22 @@ const COOKIE_OPTIONS = {
     maxAge: 7 * 24 * 60 * 60 * 1000,
 }
 
+const CLEAR_COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+}
+
 const register = async (req, res) => {
     try {
         const { name, email, password } = req.body
+
+        if (!name?.trim() || !email?.trim() || !password) {
+            return res.status(400).json({ message: 'Todos los campos son requeridos' })
+        }
+        if (password.length < 6) {
+            return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' })
+        }
 
         const existing = await User.findOne({ email })
         if (existing) {
@@ -38,6 +51,10 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body
 
+        if (!email?.trim() || !password) {
+            return res.status(400).json({ message: 'Email y contraseña son requeridos' })
+        }
+
         const user = await User.findOne({ email })
         if (!user) {
             return res.status(401).json({ message: 'Credenciales inválidas' })
@@ -62,8 +79,18 @@ const login = async (req, res) => {
 }
 
 const logout = (_req, res) => {
-    res.clearCookie('token', COOKIE_OPTIONS)
+    res.clearCookie('token', CLEAR_COOKIE_OPTIONS)
     res.json({ message: 'Sesión cerrada' })
 }
 
-module.exports = { register, login, logout }
+const me = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('name email')
+        if (!user) return res.status(401).json({ message: 'Usuario no encontrado' })
+        res.json({ user: { id: user._id, name: user.name, email: user.email } })
+    } catch {
+        res.status(500).json({ message: 'Error en el servidor' })
+    }
+}
+
+module.exports = { register, login, logout, me }

@@ -50,6 +50,9 @@ async function submit() {
 function switchMode() {
   mode.value = mode.value === 'login' ? 'register' : 'login'
   error.value = ''
+  name.value = ''
+  email.value = ''
+  password.value = ''
 }
 </script>
 

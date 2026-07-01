@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createRouter, createMemoryHistory } from 'vue-router'
-import { createPinia } from 'pinia'
+import { createPinia, setActivePinia } from 'pinia'
+import { useGameStore } from '@/stores/gameState'
 import HomeView from '../views/HomeView.vue'
 
 // createMemoryHistory() simula el router sin necesitar una URL real del navegador.
@@ -34,6 +35,10 @@ describe('HomeView', () => {
             play() { this.paused = false; return Promise.resolve() }
             pause() { this.paused = true }
         }
+        // Mock fetch para que loadProgress() retorne sin progreso guardado
+        global.fetch = vi.fn(() =>
+            Promise.resolve(new Response(JSON.stringify({ hp: 10, salaActual: 1, mejorasActivas: [] }), { status: 200 }))
+        )
         vi.useFakeTimers()
     })
     afterEach(() => {
@@ -81,6 +86,81 @@ describe('HomeView', () => {
         vi.advanceTimersByTime(200)
         await flushPromises() // espera promesas internas
         expect(pushSpy).toHaveBeenCalledWith('/game')
+    })
+
+    // Helper para montar con datos mock de progreso guardado
+    async function mountWithSavedRun(roomCount = 2, hp = 7, mejoras = ['health']) {
+        global.fetch = vi.fn(() =>
+            Promise.resolve(new Response(JSON.stringify({
+                hp, salaActual: roomCount, mejorasActivas: mejoras
+            }), { status: 200 }))
+        )
+        const pinia = createPinia()
+        setActivePinia(pinia)
+        const store = useGameStore()
+        const router = makeRouter()
+        await router.push('/')
+        const wrapper = mount(HomeView, {
+            global: { plugins: [router, pinia] }
+        })
+        await flushPromises()
+        return { store, router, wrapper }
+    }
+
+    // Verifica que el modal de continuar aparece al hacer PLAY si hay run guardado
+    it('PLAY muestra modal de continuar si hay run guardado', async () => {
+        const { wrapper } = await mountWithSavedRun()
+        expect(wrapper.text()).not.toContain('SAVED RUN')
+        const playBtn = wrapper.findAll('.botones .btn')[0]
+        await playBtn.trigger('click')
+        await flushPromises()
+        expect(wrapper.text()).toContain('SAVED RUN')
+        expect(wrapper.text()).toContain('CONTINUE')
+        expect(wrapper.text()).toContain('NEW GAME')
+    })
+
+    // Verifica que CONTINUE navega a /game con continueRun true
+    it('CONTINUE navega a /game y activa continueRun', async () => {
+        const { store, router, wrapper } = await mountWithSavedRun(2)
+        const playBtn = wrapper.findAll('.botones .btn')[0]
+        await playBtn.trigger('click')
+        await flushPromises()
+        const pushSpy = vi.spyOn(router, 'push')
+        const btns = wrapper.findAll('.continue-buttons .btn')
+        await btns[0].trigger('click')
+        vi.advanceTimersByTime(200)
+        await flushPromises()
+        expect(pushSpy).toHaveBeenCalledWith('/game')
+        expect(store.continueRun).toBe(true)
+    })
+
+    // Verifica que NEW GAME navega a /game y resetea el progreso
+    it('NEW GAME navega a /game y resetea el progreso', async () => {
+        const { store, router, wrapper } = await mountWithSavedRun(2, 7)
+        const playBtn = wrapper.findAll('.botones .btn')[0]
+        await playBtn.trigger('click')
+        await flushPromises()
+        const pushSpy = vi.spyOn(router, 'push')
+        const btns = wrapper.findAll('.continue-buttons .btn')
+        await btns[1].trigger('click')
+        vi.advanceTimersByTime(200)
+        await flushPromises()
+        expect(pushSpy).toHaveBeenCalledWith('/game')
+        expect(store.roomCount).toBe(1)
+        expect(store.hp).toBe(10)
+        expect(store.continueRun).toBe(false)
+    })
+
+    // Verifica que el modal NO aparece cuando no hay progreso guardado
+    it('no muestra modal de continuar si no hay run guardado', async () => {
+        const router = makeRouter()
+        await router.push('/')
+        const wrapper = mount(HomeView, {
+            global: { plugins: [router, createPinia()] }
+        })
+        await flushPromises()
+        expect(wrapper.text()).not.toContain('SAVED RUN')
+        expect(wrapper.find('.botones').exists()).toBe(true)
     })
 
     // Verifica que CONFIGURATIONS abre el modal con opciones de música e idioma.

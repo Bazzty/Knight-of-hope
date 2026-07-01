@@ -24,12 +24,19 @@ const config = {
     scene: [IntroScene, GameScene, Scenario2, Scenario3, ScenarioBoss, UpgradeScene]
 };
 
-export const initGame = () => {
+export const initGame = (startScene = null) => {
     if (gameInstance) {
         gameInstance.destroy(true);
     }
 
     gameInstance = new Phaser.Game(config);
+
+    if (startScene) {
+        gameInstance.events.on('ready', () => {
+            gameInstance.scene.stop('IntroScene');
+            gameInstance.scene.start(startScene);
+        });
+    }
 
     if (typeof window !== 'undefined') {
         window.__KOH_GAME = gameInstance;

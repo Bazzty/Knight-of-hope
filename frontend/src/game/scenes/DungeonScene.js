@@ -68,6 +68,8 @@ export default class DungeonScene extends Phaser.Scene {
         this.continueText = null;
         this.dialogueActive = false;
         this._dialogueAdvance = null;
+        this.isPaused = false;
+        this.pauseContainer = null;
         this._lastLeftTap = 0;
         this._lastRightTap = 0;
         this._sprintLeft = false;
@@ -93,6 +95,12 @@ export default class DungeonScene extends Phaser.Scene {
         this.wasd = this.input.keyboard.addKeys('W,A,S,D');
         this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
         this.blockKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+        this.escapeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        this.input.keyboard.addCapture(Phaser.Input.Keyboard.KeyCodes.ESC);
+        if (this._onEscDown) window.removeEventListener('keydown', this._onEscDown);
+        this._onEscDown = (e) => { if (e.key === 'Escape') { e.preventDefault(); if (!this.gameOver) this.togglePause(); } };
+        window.addEventListener('keydown', this._onEscDown);
+        this.events.once('shutdown', () => window.removeEventListener('keydown', this._onEscDown));
 
         // Animaciones del knight — idénticas en todas las salas.
         // El guard !this.anims.exists() evita error al reiniciar la escena.
@@ -310,7 +318,9 @@ export default class DungeonScene extends Phaser.Scene {
     // Bucle principal: maneja game over, input del jugador, profundidad.
     // Delega la lógica del enemigo en updateScene() de cada subclase.
     update() {
+        if (this.isPaused) return;
         if (!this.player || !this.cursors || !this.wasd) return;
+
         if (this.dialogueActive) {
             if (this._dialogueAdvance && Phaser.Input.Keyboard.JustDown(this.attackKey)) {
                 this._dialogueAdvance();
@@ -472,4 +482,209 @@ export default class DungeonScene extends Phaser.Scene {
 
     // Hook: la subclase implementa la IA del enemigo y lógica específica de frame.
     updateScene() { }
+
+    // ── SISTEMA DE PAUSA ───────────────────────────────────────────────────
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        if (this.isPaused) {
+            this.physics.world.pause();
+            this.showPauseMenu();
+            this._dimEntities();
+        } else {
+            this.physics.world.resume();
+            this.hidePauseMenu();
+            this._restoreEntities();
+        }
+    }
+
+    _dimEntities() {
+        this._setEntityAlpha(0.05);
+    }
+
+    _restoreEntities() {
+        this._setEntityAlpha(1);
+    }
+
+    _setEntityAlpha(a) {
+        if (this.player) this.player.alpha = a;
+        ['enemigo', 'enemigo2', 'skele', 'skele2', 'skele3', 'slime', 'slime2', 'slime3'].forEach(k => {
+            if (this[k]) this[k].alpha = a;
+        });
+    }
+
+    _addPauseOverlay() {
+        const { width, height } = this.scale;
+        const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.78);
+        this.pauseContainer.add(overlay);
+        const panel = this.add.rectangle(width / 2, height / 2, 420, 400, 0x0a0a0a)
+            .setStrokeStyle(3, 0xf0e68c);
+        this.pauseContainer.add(panel);
+    }
+
+    showPauseMenu() {
+        const { width, height } = this.scale;
+        const t = (en, es) => this.t(en, es);
+
+        this.pauseContainer = this.add.container(0, 0).setDepth(500);
+        this._addPauseOverlay();
+
+        const title = this.add.text(width / 2, height / 2 - 150, t('PAUSED', 'PAUSA'), {
+            fontSize: '36px', color: '#f0e68c', stroke: '#000000', strokeThickness: 5
+        }).setOrigin(0.5);
+        this.pauseContainer.add(title);
+
+        const items = [
+            { label: t('RESUME', 'REANUDAR'), action: () => this.togglePause() },
+            { label: t('CONTROLS', 'CONTROLES'), action: () => this.showPauseSubmenu('controls') },
+            { label: t('SETTINGS', 'AJUSTES'), action: () => this.showPauseSubmenu('settings') },
+            { label: t('QUIT TO MENU', 'SALIR AL MENÚ'), action: () => this.quitToMenu() },
+        ];
+
+        items.forEach((item, i) => {
+            const y = height / 2 - 60 + i * 70;
+            const btn = this.add.text(width / 2, y, item.label, {
+                fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+            btn.on('pointerover', () => btn.setColor('#f0e68c'));
+            btn.on('pointerout', () => btn.setColor('#ffffff'));
+            btn.on('pointerdown', () => item.action());
+
+            this.pauseContainer.add(btn);
+        });
+    }
+
+    hidePauseMenu() {
+        if (this.pauseContainer) {
+            this.pauseContainer.destroy();
+            this.pauseContainer = null;
+        }
+    }
+
+    showPauseSubmenu(type) {
+        const { width, height } = this.scale;
+        const t = (en, es) => this.t(en, es);
+        const store = this.store;
+
+        this.pauseContainer.removeAll(true);
+        this._addPauseOverlay();
+
+        if (type === 'controls') {
+            const cTitle = this.add.text(width / 2, height / 2 - 150, t('CONTROLS', 'CONTROLES'), {
+                fontSize: '28px', color: '#f0e68c', stroke: '#000000', strokeThickness: 5
+            }).setOrigin(0.5);
+            this.pauseContainer.add(cTitle);
+
+            const controls = [
+                { key: 'WASD / ARROWS', desc: t('Move', 'Moverse') },
+                { key: 'SPACE', desc: t('Attack (combo x3)', 'Atacar (combo x3)') },
+                { key: 'SHIFT', desc: t('Block', 'Bloquear') },
+                { key: t('Double tap dir.', 'Doble tap direc.'), desc: 'Sprint' },
+            ];
+
+            controls.forEach((c, i) => {
+                const y = height / 2 - 70 + i * 55;
+                const keyT = this.add.text(width / 2 - 140, y, c.key, {
+                    fontSize: '13px', color: '#f0e68c', stroke: '#000000', strokeThickness: 2
+                }).setOrigin(0, 0.5);
+                const descT = this.add.text(width / 2 + 20, y, c.desc, {
+                    fontSize: '12px', color: '#cccccc', stroke: '#000000', strokeThickness: 2
+                }).setOrigin(0, 0.5);
+                this.pauseContainer.add(keyT);
+                this.pauseContainer.add(descT);
+            });
+
+            const hint = this.add.text(width / 2, height / 2 + 110,
+                t('Clear all enemies to advance.', 'Elimina todos los enemigos para avanzar.'), {
+                fontSize: '10px', color: '#666666'
+            }).setOrigin(0.5);
+            this.pauseContainer.add(hint);
+        }
+
+        if (type === 'settings') {
+            const sTitle = this.add.text(width / 2, height / 2 - 150, t('SETTINGS', 'AJUSTES'), {
+                fontSize: '28px', color: '#f0e68c', stroke: '#000000', strokeThickness: 5
+            }).setOrigin(0.5);
+            this.pauseContainer.add(sTitle);
+
+            const langLabel = this.add.text(width / 2 - 140, height / 2 - 70, t('LANGUAGE', 'IDIOMA'), {
+                fontSize: '14px', color: '#f0e68c', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0, 0.5);
+            this.pauseContainer.add(langLabel);
+
+            const enBtn = this.add.text(width / 2 + 10, height / 2 - 70, 'EN', {
+                fontSize: '16px', color: store.language === 'en' ? '#f0e68c' : '#888888',
+                stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            enBtn.on('pointerdown', () => {
+                if (store.language !== 'en') { store.setLanguage('en'); this.showPauseSubmenu('settings'); }
+            });
+            this.pauseContainer.add(enBtn);
+
+            const esBtn = this.add.text(width / 2 + 70, height / 2 - 70, 'ES', {
+                fontSize: '16px', color: store.language === 'es' ? '#f0e68c' : '#888888',
+                stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            esBtn.on('pointerdown', () => {
+                if (store.language !== 'es') { store.setLanguage('es'); this.showPauseSubmenu('settings'); }
+            });
+            this.pauseContainer.add(esBtn);
+
+            const musicLabel = this.add.text(width / 2 - 140, height / 2 - 10, t('MUSIC', 'MÚSICA'), {
+                fontSize: '14px', color: '#f0e68c', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0, 0.5);
+            this.pauseContainer.add(musicLabel);
+
+            const bgm = this.sound.get('musicforscenes');
+            const volText = this.add.text(width / 2, height / 2 - 10,
+                `${Math.round((bgm?.volume ?? 0.15) * 100)}`, {
+                fontSize: '14px', color: '#cccccc', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5);
+            this.pauseContainer.add(volText);
+
+            const volDown = this.add.text(width / 2 - 60, height / 2 - 10, '◀', {
+                fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            volDown.on('pointerdown', () => {
+                const bgm2 = this.sound.get('musicforscenes');
+                if (bgm2) {
+                    const newVol = Math.max(0, Math.round((bgm2.volume - 0.05) * 100) / 100);
+                    bgm2.setVolume(newVol);
+                }
+                this.showPauseSubmenu('settings');
+            });
+            this.pauseContainer.add(volDown);
+
+            const volUp = this.add.text(width / 2 + 60, height / 2 - 10, '▶', {
+                fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            volUp.on('pointerdown', () => {
+                const bgm2 = this.sound.get('musicforscenes');
+                if (bgm2) {
+                    const newVol = Math.min(1, Math.round((bgm2.volume + 0.05) * 100) / 100);
+                    bgm2.setVolume(newVol);
+                }
+                this.showPauseSubmenu('settings');
+            });
+            this.pauseContainer.add(volUp);
+        }
+
+        const backBtn = this.add.text(width / 2, height / 2 + 150, t('BACK', 'VOLVER'), {
+            fontSize: '16px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        backBtn.on('pointerover', () => backBtn.setColor('#f0e68c'));
+        backBtn.on('pointerout', () => backBtn.setColor('#ffffff'));
+        backBtn.on('pointerdown', () => {
+            this.pauseContainer.removeAll(true);
+            this.showPauseMenu();
+        });
+        this.pauseContainer.add(backBtn);
+    }
+
+    quitToMenu() {
+        this.sound.stopAll();
+        this.store.saveProgress();
+        this.store.setContinueRun(false);
+        window.dispatchEvent(new CustomEvent('koh-quit'));
+    }
 }

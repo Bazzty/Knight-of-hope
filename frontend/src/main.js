@@ -10,6 +10,9 @@ const pinia = createPinia()
 
 app.use(pinia)
 
+const auth = useAuthStore()
+await auth.init()
+
 router.beforeEach((to) => {
   const auth = useAuthStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) {

@@ -12,6 +12,20 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
+    async init() {
+      try {
+        const res = await fetch(`${API}/api/auth/me`, { credentials: 'include' })
+        if (res.ok) {
+          const data = await res.json()
+          this._saveUser(data.user)
+        } else {
+          this._clearUser()
+        }
+      } catch {
+        // red caída — mantener estado actual
+      }
+    },
+
     async register(name, email, password) {
       const res = await fetch(`${API}/api/auth/register`, {
         method: 'POST',

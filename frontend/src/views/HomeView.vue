@@ -2,9 +2,11 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useGameStore } from '@/stores/gameState'
+import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const store = useGameStore()
+const auth = useAuthStore()
 
 const howToPlayVisible = ref(false)
 const configVisible = ref(false)
@@ -22,6 +24,8 @@ const labels = computed(() => {
     howToPlay:    es ? 'CÓMO JUGAR'    : 'HOW TO PLAY',
     config:       es ? 'CONFIGURACIÓN' : 'CONFIGURATIONS',
     quit:         es ? 'SALIR'         : 'QUIT',
+    logout:       es ? 'CERRAR SESIÓN' : 'LOG OUT',
+    welcome:      es ? `BIENVENIDO, ${auth.user?.name?.toUpperCase()}` : `WELCOME, ${auth.user?.name?.toUpperCase()}`,
     howToPlayTitle: es ? 'CÓMO JUGAR'  : 'HOW TO PLAY',
     configTitle:  es ? 'CONFIGURACIÓN' : 'CONFIGURATIONS',
     move:         es ? 'Moverse'       : 'Move',
@@ -146,6 +150,12 @@ function newGame() {
   router.push('/game')
 }
 
+async function logout() {
+  playButtonSfx()
+  await auth.logout()
+  router.push('/')
+}
+
 function closeModal() {
   howToPlayVisible.value = false
   configVisible.value = false
@@ -158,11 +168,13 @@ function closeModal() {
   <div class="home">
     <div class="menu">
       <h1 class="titulo">KNIGHT OF HOPE</h1>
+      <p class="welcome-text">{{ labels.welcome }}</p>
       <div class="botones">
         <button class="btn" @click="play">{{ labels.play }}</button>
         <button class="btn" @click="openHowToPlay">{{ labels.howToPlay }}</button>
         <button class="btn" @click="openConfig">{{ labels.config }}</button>
         <button class="btn" @click="quit">{{ labels.quit }}</button>
+        <button class="btn btn--logout" @click="logout">{{ labels.logout }}</button>
       </div>
     </div>
 
@@ -272,10 +284,31 @@ function closeModal() {
   line-height: 1.6;
 }
 
+.welcome-text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: #aaaaaa;
+  margin: -16px 0 20px 0;
+  letter-spacing: 1px;
+}
+
 .botones {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.btn--logout {
+  color: #888888;
+  border-color: #555555;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.btn--logout:hover {
+  background-color: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
 }
 
 .btn {

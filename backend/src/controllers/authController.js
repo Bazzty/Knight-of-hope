@@ -2,6 +2,35 @@ const User = require('../models/User')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 
+async function validateEmailWithAbstract(email) {
+    const key = process.env.ABSTRACT_API_KEY
+    if (!key) return
+    const url = `https://emailreputation.abstractapi.com/v1/?api_key=${key}&email=${encodeURIComponent(email)}`
+    let res
+    try {
+        res = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    } catch {
+        return
+    }
+    if (!res.ok) return
+    const data = await res.json()
+    if (data.email_deliverability?.is_format_valid === false) {
+        const err = new Error('El formato del email no es válido')
+        err.isValidation = true
+        throw err
+    }
+    if (data.email_quality?.is_disposable === true) {
+        const err = new Error('No se permiten emails temporales o desechables')
+        err.isValidation = true
+        throw err
+    }
+    if (data.email_deliverability?.is_mx_valid === false) {
+        const err = new Error('El dominio del email no existe o no puede recibir mensajes')
+        err.isValidation = true
+        throw err
+    }
+}
+
 const COOKIE_OPTIONS = {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
@@ -26,6 +55,8 @@ const register = async (req, res) => {
             return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' })
         }
 
+        await validateEmailWithAbstract(email)
+
         const existing = await User.findOne({ email })
         if (existing) {
             return res.status(400).json({ message: 'El email ya está registrado' })
@@ -43,7 +74,8 @@ const register = async (req, res) => {
         res.cookie('token', token, COOKIE_OPTIONS)
         res.status(201).json({ user: { id: user._id, name: user.name, email: user.email } })
     } catch (err) {
-        res.status(500).json({ message: 'Error en el servidor' })
+        const status = err.isValidation ? 400 : 500
+        res.status(status).json({ message: err.isValidation ? err.message : 'Error en el servidor' })
     }
 }
 

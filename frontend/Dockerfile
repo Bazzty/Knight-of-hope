@@ -1,4 +1,5 @@
 FROM node:22-alpine AS build
+ENV CI=true
 RUN corepack enable pnpm
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./

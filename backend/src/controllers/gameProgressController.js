@@ -1,8 +1,11 @@
 const GameProgress = require('../models/GameProgress')
 
+// ─── Constantes ────────────────────────────────────────────────────────────────
+
 const VALID_MEJORAS = ['health', 'attack', 'speed']
 
-// Obtener progreso del usuario autenticado (upsert atómico evita race condition)
+// ─── Lógica de negocio ─────────────────────────────────────────────────────────
+
 exports.getProgress = async (req, res) => {
     try {
         const progress = await GameProgress.findOneAndUpdate(
@@ -11,12 +14,11 @@ exports.getProgress = async (req, res) => {
             { new: true, upsert: true }
         )
         res.json(progress)
-    } catch (error) {
-        res.status(500).json({ message: error.message })
+    } catch {
+        res.status(500).json({ message: 'Error en el servidor' })
     }
 }
 
-// Guardar progreso (crea si no existe, actualiza si ya existe)
 exports.saveProgress = async (req, res) => {
     try {
         const { salaActual, hp, mejorasActivas } = req.body
@@ -36,7 +38,7 @@ exports.saveProgress = async (req, res) => {
             { new: true, upsert: true }
         )
         res.json(progress)
-    } catch (error) {
-        res.status(500).json({ message: error.message })
+    } catch {
+        res.status(500).json({ message: 'Error en el servidor' })
     }
 }

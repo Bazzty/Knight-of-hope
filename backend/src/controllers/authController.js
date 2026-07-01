@@ -6,7 +6,12 @@ async function validateEmailWithAbstract(email) {
     const key = process.env.ABSTRACT_API_KEY
     if (!key) return
     const url = `https://emailreputation.abstractapi.com/v1/?api_key=${key}&email=${encodeURIComponent(email)}`
-    const res = await fetch(url)
+    let res
+    try {
+        res = await fetch(url, { signal: AbortSignal.timeout(5000) })
+    } catch {
+        return
+    }
     if (!res.ok) return
     const data = await res.json()
     if (data.email_deliverability?.is_format_valid === false) {

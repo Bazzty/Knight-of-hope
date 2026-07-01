@@ -57,19 +57,20 @@ describe('HomeView', () => {
         expect(wrapper.find('h1').text()).toBe('KNIGHT OF HOPE')
     })
 
-    // Verifica que los cuatro botones del menú existen en el DOM.
-    it('renderiza los botones PLAY, HOW TO PLAY, CONFIGURATIONS y QUIT', async () => {
+    // Verifica que los cinco botones del menú existen en el DOM.
+    it('renderiza los botones PLAY, HOW TO PLAY, CONFIGURATIONS, QUIT y LOG OUT', async () => {
         const router = makeRouter()
         await router.push('/')
         const wrapper = mount(HomeView, {
             global: { plugins: [router, createPinia()] }
         })
         const botones = wrapper.findAll('.botones .btn')
-        expect(botones).toHaveLength(4)
+        expect(botones).toHaveLength(5)
         expect(botones[0].text()).toBe('PLAY')
         expect(botones[1].text()).toBe('HOW TO PLAY')
         expect(botones[2].text()).toBe('CONFIGURATIONS')
         expect(botones[3].text()).toBe('QUIT')
+        expect(botones[4].text()).toBe('LOG OUT')
     })
 
     // Verifica que hacer click en PLAY navega a la ruta /game.

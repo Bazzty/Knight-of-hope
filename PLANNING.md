@@ -151,7 +151,7 @@
 - [x] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
 - [x] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
 - [x] Endpoint `POST /api/auth/login` — login con emisión de JWT
-- [ ] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
+- [x] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
 - [x] Middleware de autenticación para rutas protegidas
 - [x] Pantalla de registro e inicio de sesión en el frontend (Vue)
 - [x] Integrar token JWT en el frontend (almacenamiento y envío en headers)
@@ -233,7 +233,6 @@
 A lo largo del desarrollo surgieron tareas que no pudieron concretarse, principalmente por priorización de funcionalidades core y limitaciones de tiempo:
 
 - **Aumento de niveles:** se planificó agregar más salas de combate más allá de las 4 existentes. Se descartó para priorizar la integración fullstack (backend, autenticación y progreso persistente) que era el objetivo central de la Solemne 3.
-- **Aplicar mejoras del feedback de la Solemne 2:** las correcciones sugeridas por el profesor tras la primera entrega quedaron pendientes. La decisión fue enfocarse en construir el backend desde cero, dado que representaba la mayor carga de trabajo de la etapa.
 - **Transición animada entre habitaciones:** se optó por un cambio directo de escena para mantener la estabilidad del juego y no arriesgar bugs de sincronización entre animaciones y lógica de combate.
 
 ---

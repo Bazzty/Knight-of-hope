@@ -225,3 +225,21 @@
 
 ### Lo que no se logró y el motivo
 > Se completaron todas las tareas planificadas para esta semana.
+
+---
+
+## Resumen de tareas no completadas en el proyecto
+
+A lo largo del desarrollo surgieron tareas que no pudieron concretarse, principalmente por priorización de funcionalidades core y limitaciones de tiempo:
+
+- **Aumento de niveles:** se planificó agregar más salas de combate más allá de las 4 existentes. Se descartó para priorizar la integración fullstack (backend, autenticación y progreso persistente) que era el objetivo central de la Solemne 3.
+- **Aplicar mejoras del feedback de la Solemne 2:** las correcciones sugeridas por el profesor tras la primera entrega quedaron pendientes. La decisión fue enfocarse en construir el backend desde cero, dado que representaba la mayor carga de trabajo de la etapa.
+- **Transición animada entre habitaciones:** se optó por un cambio directo de escena para mantener la estabilidad del juego y no arriesgar bugs de sincronización entre animaciones y lógica de combate.
+
+---
+
+## Conclusión
+
+El proyecto Knight of Hope cumplió con sus objetivos principales en ambas solemnes. En la primera etapa se construyó un juego 2D funcional con mecánicas de combate, sistema de mejoras, múltiples salas y un boss final. En la segunda etapa se integró una arquitectura fullstack completa: autenticación segura con JWT y HttpOnly Cookies, progreso persistente en MongoDB, validación de email mediante un servicio externo (Abstract API), pipeline de CI/CD con GitHub Actions y despliegue automático de imágenes Docker a DockerHub.
+
+Las tareas que no se completaron respondieron siempre a decisiones de prioridad conscientes y no a bloqueos técnicos. El equipo logró entregar un producto jugable, desplegable y con cobertura de pruebas unitarias tanto en frontend como en backend.

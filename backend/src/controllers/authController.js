@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 async function validateEmailWithAbstract(email) {
     const key = process.env.ABSTRACT_API_KEY
     if (!key) return
-    const url = `https://emailreputation.abstractapi.com/v1/?api_key=${key}&email=${encodeURIComponent(email)}`
+    const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${key}&email=${encodeURIComponent(email)}`
     let res
     try {
         res = await fetch(url, { signal: AbortSignal.timeout(5000) })
@@ -14,17 +14,17 @@ async function validateEmailWithAbstract(email) {
     }
     if (!res.ok) return
     const data = await res.json()
-    if (data.email_deliverability?.is_format_valid === false) {
+    if (data.is_valid_format?.value === false) {
         const err = new Error('El formato del email no es válido')
         err.isValidation = true
         throw err
     }
-    if (data.email_quality?.is_disposable === true) {
+    if (data.is_disposable_email?.value === true) {
         const err = new Error('No se permiten emails temporales o desechables')
         err.isValidation = true
         throw err
     }
-    if (data.email_deliverability?.is_mx_valid === false) {
+    if (data.is_mx_found?.value === false) {
         const err = new Error('El dominio del email no existe o no puede recibir mensajes')
         err.isValidation = true
         throw err

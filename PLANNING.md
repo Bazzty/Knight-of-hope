@@ -182,9 +182,9 @@
 - [x] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
 - [x] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
 - [x] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
-- [ ] Integrar el servicio REST externo elegido (definido en `DESIGN.md`)
-- [ ] Pruebas unitarias del backend: endpoints de auth y progreso
-- [ ] Pruebas unitarias del frontend (nuevos componentes de auth y progreso)
+- [x] Integrar el servicio REST externo elegido (definido en `DESIGN.md`)
+- [x] Pruebas unitarias del backend: endpoints de auth y progreso
+- [x] Pruebas unitarias del frontend (nuevos componentes de auth y progreso)
 
 ### Lo que se logró completar
 - Modelo `GameProgress` en MongoDB con campos `usuario`, `salaActual`, `hp` y `mejorasActivas[]`
@@ -195,27 +195,33 @@
 - Guardado automático al salir del juego (sala actual, HP y mejoras activas)
 - Menú de pausa en el juego (tecla ESC): reanudar, controles, ajustes de volumen e idioma, y salir al menú principal
 - Los personajes se oscurecen visualmente al pausar para no tapar el menú
+- Servicio REST externo integrado: Abstract API (`emailvalidation.abstractapi.com`) para validar el email durante el registro
+- Pruebas unitarias del backend: endpoints de auth y progreso cubiertos con tests
+- Pruebas unitarias del frontend: `gameState.spec.js` ampliado con tests de `loadProgress()` y `saveProgress()` contra el backend
 
 ### Lo que no se logró y el motivo
-- **Servicio REST externo:** no se alcanzó a integrar por falta de tiempo, se implementará en la semana final.
-- **Pruebas unitarias del backend:** no se realizaron durante esta semana, se implementarán en la semana final.
-- **Pruebas unitarias del frontend** (nuevos componentes de auth y progreso): no se realizaron durante esta semana, se implementarán en la semana final.
+> Se completaron todas las tareas planificadas para esta semana.
 
 ---
 
 ## Semana 3 — Docker, CI/CD y entrega final 
 
 ### Tareas planificadas
-- [ ] `Dockerfile` para el **backend** (Node.js)
-- [ ] `compose.yml` que levante los tres servicios: frontend, backend y MongoDB
-- [ ] Actualizar GitHub Actions: agregar job de build y push de **ambas** imágenes a DockerHub
-- [ ] Subir imagen del backend a DockerHub
-- [ ] Actualizar `README.md`: instrucciones de ejecución local, Docker Compose y links a DockerHub
-- [ ] Pruebas finales end-to-end en Chrome, Firefox y Safari
-- [ ] Verificar que `PLANNING.md` esté actualizado semana a semana
+- [x] `Dockerfile` para el **backend** (Node.js)
+- [x] `compose.yml` que levante los tres servicios: frontend, backend y MongoDB
+- [x] Actualizar GitHub Actions: agregar job de build y push de **ambas** imágenes a DockerHub
+- [x] Subir imagen del backend a DockerHub
+- [x] Actualizar `README.md`: instrucciones de ejecución local, Docker Compose y links a DockerHub
+- [x] Pruebas finales end-to-end en Chrome, Firefox y Safari
+- [x] Verificar que `PLANNING.md` esté actualizado semana a semana
 
 ### Lo que se logró completar
-> _(completar al finalizar la semana)_
+- `Dockerfile` multi-etapa para el backend (Node.js 22 + producción)
+- `compose.yml` actualizado con los tres servicios: `frontend`, `backend` y `mongo` (con healthcheck)
+- GitHub Actions ampliado con jobs `docker-frontend` y `docker-backend`: build y push automático a DockerHub en cada merge a `main`
+- Imagen del backend publicada en DockerHub (`bazzty/knight-of-hope-backend:latest`)
+- `README.md` actualizado con instrucciones de ejecución manual, Docker Compose y pull directo desde DockerHub
+- `PLANNING.md` actualizado con el estado final de todas las semanas
 
 ### Lo que no se logró y el motivo
-> _(completar al finalizar la semana)_
+> Se completaron todas las tareas planificadas para esta semana.

@@ -25,7 +25,7 @@ exports.saveProgress = async (req, res) => {
 
         if (
             typeof hp !== 'number' || hp < 0 || hp > 100 ||
-            typeof salaActual !== 'number' || salaActual < 1 || salaActual > 4 ||
+            typeof salaActual !== 'number' || salaActual < 1 || salaActual > 5 ||
             !Array.isArray(mejorasActivas) ||
             mejorasActivas.some(m => !VALID_MEJORAS.includes(m))
         ) {

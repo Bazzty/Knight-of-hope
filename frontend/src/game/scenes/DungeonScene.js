@@ -1,0 +1,690 @@
+import Phaser from 'phaser';
+import createPlayer from '../entities/player';
+import { useGameStore } from '../../stores/gameState';
+
+// Cada cuántas salas aparece la pantalla de mejoras.
+const UPGRADE_EVERY = 1;
+
+// Clase base para todas las salas del dungeon.
+// Define el flujo común (input, animaciones, HUD, combate, game over, puertas)
+// y expone hooks que las subclases sobreescriben para lo específico de cada sala.
+export default class DungeonScene extends Phaser.Scene {
+    constructor(key) {
+        super(key);
+        this.player = null;
+        this.cursors = null;
+        this.wasd = null;
+        this.attackKey = null;
+        this.blockKey = null;
+        this.hpText = null;
+        this.hpBarBg = null;
+        this.hpBarFill = null;
+        this.store = null;
+        this.gameOver = false;
+        this.gameOverText = null;
+        this.continueText = null;
+        this.dialogueActive = false;
+        this._dialogueAdvance = null;
+    }
+
+    // ── PRELOAD ───────────────────────────────────────────────────────────────────────
+    // Carga los spritesheets del knight que se usan en TODAS las salas.
+    // Llama a preloadScene() para que cada hija cargue sus assets propios.
+    preload() {
+        this.load.spritesheet('knight_walk', 'assets/player/knight-walk.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_attack', 'assets/player/knight-attack.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_death', 'assets/player/knight-death.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_idle', 'assets/player/knight-idle.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_defend', 'assets/player/knight-defend.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_run', 'assets/player/knight-run.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_attack1', 'assets/player/knight-attack1.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_attack2', 'assets/player/knight-attack2.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_attack3', 'assets/player/knight-attack3.png', { frameWidth: 96, frameHeight: 84 });
+        this.load.spritesheet('knight_hurt', 'assets/player/knight-hurt.png', { frameWidth: 96, frameHeight: 84 });
+
+        // Carga la música general (Phaser detectará si usa el OGG o el MP3 según el navegador)
+        this.load.audio('musicforscenes', [
+            'assets/audio/music/musicforscenes.ogg',
+            'assets/audio/music/musicforscenes.mp3'
+        ]);
+        this.load.audio('gameoversound', [
+            'assets/audio/music/sfx/gameover.ogg',
+            'assets/audio/music/sfx/gameover.mp3'
+        ]);
+
+        // IMPORTANTE: Llama al pre-load de la respectiva sala (GameScene, Scenario2, etc.)
+        this.preloadScene();
+    }
+
+    // Hook: la subclase carga sus assets específicos (fondo, enemigo, etc.).
+    preloadScene() { }
+
+    // ── CREATE ────────────────────────────────────────────────────────────────────────
+    // Inicializa todo lo común: store, input, animaciones del knight, HUD.
+    // Luego delega en createScene() para lo específico de cada sala.
+    create() {
+        this.gameOver = false;
+        this.gameOverText = null;
+        this.continueText = null;
+        this.dialogueActive = false;
+        this._dialogueAdvance = null;
+        this.isPaused = false;
+        this.pauseContainer = null;
+        this._lastLeftTap = 0;
+        this._lastRightTap = 0;
+        this._sprintLeft = false;
+        this._sprintRight = false;
+
+        this.store = useGameStore();
+
+        // Reproducir música (verificando que no esté sonando ya para que no se reinicie)
+        let musicforscenes = this.sound.get('musicforscenes');
+        if (!musicforscenes) {
+            musicforscenes = this.sound.add('musicforscenes', { loop: true, volume: 0.15 });
+            musicforscenes.play();
+        } else {
+            // Restaurar volumen normal por si venimos de un "Game Over"
+            musicforscenes.setVolume(0.15);
+            if (!musicforscenes.isPlaying) {
+                musicforscenes.play();
+            }
+        }
+
+        // Input — idéntico en todas las salas.
+        this.cursors = this.input.keyboard.createCursorKeys();
+        this.wasd = this.input.keyboard.addKeys('W,A,S,D');
+        this.attackKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        this.blockKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SHIFT);
+        this.escapeKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+        this.input.keyboard.addCapture(Phaser.Input.Keyboard.KeyCodes.ESC);
+        if (this._onEscDown) window.removeEventListener('keydown', this._onEscDown);
+        this._onEscDown = (e) => { if (e.key === 'Escape') { e.preventDefault(); if (!this.gameOver) this.togglePause(); } };
+        window.addEventListener('keydown', this._onEscDown);
+        this.events.once('shutdown', () => window.removeEventListener('keydown', this._onEscDown));
+
+        // Animaciones del knight — idénticas en todas las salas.
+        // El guard !this.anims.exists() evita error al reiniciar la escena.
+        if (!this.anims.exists('knight_defend_anim')) {
+            this.anims.create({ key: 'knight_defend_anim', frames: this.anims.generateFrameNumbers('knight_defend', { start: 0, end: 5 }), frameRate: 10, repeat: -1 });
+        }
+        if (!this.anims.exists('knight_idle_anim')) {
+            this.anims.create({ key: 'knight_idle_anim', frames: this.anims.generateFrameNumbers('knight_idle', { start: 0, end: 6 }), frameRate: 8, repeat: -1 });
+        }
+        if (!this.anims.exists('knight_walk_anim')) {
+            this.anims.create({ key: 'knight_walk_anim', frames: this.anims.generateFrameNumbers('knight_walk', { start: 0, end: 7 }), frameRate: 10, repeat: -1 });
+        }
+        if (!this.anims.exists('knight_attack_anim')) {
+            this.anims.create({ key: 'knight_attack_anim', frames: this.anims.generateFrameNumbers('knight_attack', { start: 0, end: 5 }), frameRate: 14, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_death_anim')) {
+            this.anims.create({ key: 'knight_death_anim', frames: this.anims.generateFrameNumbers('knight_death', { start: 0, end: 11 }), frameRate: 8, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_run_anim')) {
+            this.anims.create({ key: 'knight_run_anim', frames: this.anims.generateFrameNumbers('knight_run', { start: 0, end: 7 }), frameRate: 12, repeat: -1 });
+        }
+        if (!this.anims.exists('knight_attack1_anim')) {
+            this.anims.create({ key: 'knight_attack1_anim', frames: this.anims.generateFrameNumbers('knight_attack1', { start: 0, end: 5 }), frameRate: 14, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_attack2_anim')) {
+            this.anims.create({ key: 'knight_attack2_anim', frames: this.anims.generateFrameNumbers('knight_attack2', { start: 0, end: 4 }), frameRate: 14, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_attack3_anim')) {
+            this.anims.create({ key: 'knight_attack3_anim', frames: this.anims.generateFrameNumbers('knight_attack3', { start: 0, end: 5 }), frameRate: 14, repeat: 0 });
+        }
+        if (!this.anims.exists('knight_hurt_anim')) {
+            this.anims.create({ key: 'knight_hurt_anim', frames: this.anims.generateFrameNumbers('knight_hurt', { start: 0, end: 3 }), frameRate: 12, repeat: 0 });
+        }
+
+        // HUD de vida — barra visual + texto numérico.
+        const barX = 20, barY = 20, barW = 220, barH = 22;
+        this.hpBarBg = this.add.rectangle(barX, barY, barW, barH, 0x222222)
+            .setOrigin(0, 0).setDepth(200).setStrokeStyle(2, 0x555555);
+        this.hpBarFill = this.add.rectangle(barX + 2, barY + 2, barW - 4, barH - 4, 0x22cc44)
+            .setOrigin(0, 0).setDepth(201);
+        this.hpText = this.add.text(barX + barW + 10, barY + barH / 2, '', {
+            fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0, 0.5).setDepth(202);
+
+        // La subclase construye el resto: fondo, límites del mundo, enemigo, overlaps.
+        this.createScene();
+        this.showRoomTitle(this.getRoomTitle());
+    }
+
+    // Hook principal: la subclase arma el fondo, llama spawnPlayer(), crea enemigos y overlaps.
+    createScene() { }
+
+    // ── PLAYER ────────────────────────────────────────────────────────────────────────
+    // Crea el jugador leyendo los stats actuales del store.
+    // La subclase decide CUÁNDO llamar esto dentro de createScene()
+    // (GameScene lo llama después de reset(); las demás, directo).
+    spawnPlayer(x, y) {
+        this.player = createPlayer(this, x, y, {
+            speed: this.store.playerSpeed,
+            damage: this.store.playerDamage,
+            maxHp: this.store.maxHp,
+            hp: this.store.hp,
+            blockKey: this.blockKey,
+        });
+        this.updateHpDisplay();
+    }
+
+    // ── HUD ───────────────────────────────────────────────────────────────────────────
+    updateHpDisplay() {
+        if (!this.player || !this.hpBarFill) return;
+        const ratio = Math.max(0, this.player.hp / this.player.maxHp);
+        this.hpBarFill.width = 216 * ratio;
+        const color = ratio > 0.6 ? 0x22cc44 : ratio > 0.3 ? 0xeecc00 : 0xee2222;
+        this.hpBarFill.setFillStyle(color);
+        if (this.hpText) this.hpText.setText(`${this.player.hp} / ${this.player.maxHp}`);
+    }
+
+    // ── COMBATE: DAÑO AL JUGADOR ──────────────────────────────────────────────────────
+    // Centraliza: aplicar daño + sincronizar store + actualizar HUD + manejar muerte.
+    // Las subclases llaman esto desde sus overlaps en vez de duplicar esa lógica.
+    handlePlayerTakeDamage(amount, sourceX = null, shake = false) {
+        const { died, tookDamage } = this.player.takeDamage(amount);
+        this.store.setHp(this.player.hp);
+        this.updateHpDisplay();
+        if (!this.gameOver) {
+            if (shake) this.cameras.main.shake(150, 0.012);
+            if (tookDamage && !died && sourceX !== null) {
+                const dir = this.player.x < sourceX ? -1 : 1;
+                this.player.setVelocityX(dir * 280);
+                this.time.delayedCall(130, () => {
+                    if (this.player?.body) this.player.setVelocityX(0);
+                });
+            }
+        }
+        if (died && !this.gameOver) this.handlePlayerDeath();
+        return died;
+    }
+
+    // ── COMBATE: MUERTE DEL JUGADOR ───────────────────────────────────────────────────
+    // Congela al jugador, reproduce animación de muerte y muestra UI de game over.
+    handlePlayerDeath() {
+        this.gameOver = true;
+
+        // Reducir la música de fondo y reproducir el sonido de game over
+        const bgm = this.sound.get('musicforscenes');
+        if (bgm) {
+            bgm.setVolume(0.05);
+        }
+        this.sound.play('gameoversound', { volume: 0.1 });
+
+        this.player.setVelocity(0, 0);
+        this.player.anims.stop();
+        this.player.setOrigin(0.5, 1);
+        this.player.setScale(5.0);
+        this.player.setTexture('knight_death');
+        this.player.body.enable = false;
+        this.player.alpha = 1;
+        this.player.play('knight_death_anim');
+
+        // Muestra el UI cuando termina la animación.
+        this.player.once('animationcomplete', (anim) => {
+            if (anim.key !== 'knight_death_anim') return;
+            this.showGameOverUI();
+        });
+
+        this.time.delayedCall(1200, () => {
+            if (this.gameOver) this.showGameOverUI();
+        });
+    }
+
+    // Helper de traducción: devuelve `es` si el idioma es español, `en` si no.
+    t(en, es) {
+        return this.store?.language === 'es' ? es : en;
+    }
+
+    showGameOverUI() {
+        if (this.gameOverText || this.continueText) return;
+        const { width, height } = this.scale;
+        this.gameOverText = this.add.text(width / 2, height / 2 - 24, 'GAME OVER', {
+            fontSize: '64px', color: '#ff0000', stroke: '#000000', strokeThickness: 6
+        }).setOrigin(0.5).setDepth(300);
+        this.continueText = this.add.text(width / 2, height / 2 + 250, this.t('Press SPACE to retry', 'ESPACIO para reintentar'), {
+            fontSize: '26px', color: '#ffffff', stroke: '#000000', strokeThickness: 4
+        }).setOrigin(0.5).setDepth(300);
+    }
+
+    // ── SALA COMPLETADA ───────────────────────────────────────────────────────────────
+    // Persiste HP, incrementa contador de salas, muestra texto y gestiona upgrade/puerta.
+    // nextScene: clave de la escena siguiente. Si es null, llama afterRoomCleared() en su lugar.
+    // text/color: mensaje de sala completada (por defecto traducido según idioma).
+    onRoomCleared(nextScene, text = null, color = '#f31313', skipUpgrade = false) {
+        this.store.setHp(this.player.hp);
+        this.store.incrementRoom();
+
+        const displayText = text ?? this.t('ROOM CLEARED!', '¡SALA COMPLETADA!');
+        const { width, height } = this.scale;
+        const roomText = this.add.text(width / 2, height / 3.5, displayText, {
+            fontSize: '60px', color, stroke: '#000000', strokeThickness: 6
+        }).setOrigin(0.5).setDepth(300);
+
+        this.time.delayedCall(2000, () => {
+            if (roomText?.destroy) roomText.destroy();
+
+            // Se ejecuta tanto después del upgrade como cuando no hay upgrade.
+            const proceed = () => {
+                // Sincroniza los stats del jugador con los del store (puede haber subido de nivel).
+                this.player.hp = this.store.hp;
+                this.player.maxHp = this.store.maxHp;
+                this.player.speed = this.store.playerSpeed;
+                this.player.damage = this.store.playerDamage;
+                this.updateHpDisplay();
+
+                if (nextScene) {
+                    this.showDoorTrigger(nextScene);
+                } else {
+                    // ScenarioBoss sobreescribe esto para mostrar la pantalla de victoria.
+                    this.afterRoomCleared();
+                }
+            };
+
+            if (!skipUpgrade && this.store.roomCount % UPGRADE_EVERY === 0) {
+                this.scene.pause();
+                this.scene.launch('UpgradeScene', { callerScene: this.scene.key });
+                this.events.once('upgrade-chosen', proceed);
+            } else {
+                proceed();
+            }
+        });
+    }
+
+    // Hook para cuando no hay sala siguiente (usado en ScenarioBoss).
+    afterRoomCleared() { }
+
+    // ── PUERTA ────────────────────────────────────────────────────────────────────────
+    // Crea un trigger invisible fuera del borde derecho de la pantalla.
+    // Al entrar el jugador, guarda el HP y lanza la escena siguiente.
+    showDoorTrigger(nextScene) {
+        const { width, height } = this.scale;
+        const doorTrigger = this.add.rectangle(width + 80, height / 2 + 10, 220, 300).setOrigin(0.5).setDepth(199);
+        doorTrigger.visible = false;
+        this.physics.add.existing(doorTrigger, true);
+
+        let doorOverlap = this.physics.add.overlap(this.player, doorTrigger, () => {
+            if (doorOverlap) {
+                try { doorOverlap.destroy(); } catch (e) { /* ya destruido */ }
+                doorOverlap = null;
+            }
+            if (doorTrigger?.destroy) doorTrigger.destroy();
+            this.store.setHp(this.player.hp);
+            this.scene.start(nextScene);
+        }, null, this);
+    }
+
+    // ── UPDATE ────────────────────────────────────────────────────────────────────────
+    // Bucle principal: maneja game over, input del jugador, profundidad.
+    // Delega la lógica del enemigo en updateScene() de cada subclase.
+    update() {
+        if (this.isPaused) return;
+        if (!this.player || !this.cursors || !this.wasd) return;
+
+        if (this.dialogueActive) {
+            if (this._dialogueAdvance && Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+                this._dialogueAdvance();
+            }
+            return;
+        }
+
+        if (this.gameOver) {
+            if (Phaser.Input.Keyboard.JustDown(this.attackKey)) {
+                // Al morir y pedir retry, volver al inicio global (GameScene)
+                // Detenemos audio activo y reseteamos el estado del juego.
+                try { this.sound.stopAll(); } catch (e) { /* ignore */ }
+                try { this.store.reset(); } catch (e) { /* ignore */ }
+                this.scene.start('GameScene');
+            }
+            return;
+        }
+
+        if (!this.player.isBlocking && Phaser.Input.Keyboard.JustDown(this.attackKey)) this.player.attack();
+
+        const now = this.time.now;
+        const leftJust  = Phaser.Input.Keyboard.JustDown(this.cursors.left)  || Phaser.Input.Keyboard.JustDown(this.wasd.A);
+        const rightJust = Phaser.Input.Keyboard.JustDown(this.cursors.right) || Phaser.Input.Keyboard.JustDown(this.wasd.D);
+        const leftHeld  = this.cursors.left.isDown  || this.wasd.A.isDown;
+        const rightHeld = this.cursors.right.isDown || this.wasd.D.isDown;
+
+        if (leftJust)  { if (now - this._lastLeftTap  < 280) this._sprintLeft  = true; this._lastLeftTap  = now; }
+        if (rightJust) { if (now - this._lastRightTap < 280) this._sprintRight = true; this._lastRightTap = now; }
+        if (!leftHeld)  this._sprintLeft  = false;
+        if (!rightHeld) this._sprintRight = false;
+
+        this.player.updateMovement({
+            left: leftHeld,
+            right: rightHeld,
+            up: this.cursors.up.isDown || this.wasd.W.isDown,
+            down: this.cursors.down.isDown || this.wasd.S.isDown,
+            block: this.blockKey.isDown,
+            sprint: this._sprintLeft || this._sprintRight
+        });
+
+        this.player.setDepth(this.player.y);
+
+        this.updateScene();
+    }
+
+    // ── EFECTOS VISUALES ──────────────────────────────────────────────────────────────
+    // Explosión de partículas rectangulares al matar un enemigo.
+    spawnHitBurst(x, y, colors = [0xffcc00, 0xff8800, 0xffffff, 0xff4444]) {
+        const count = 12;
+        for (let i = 0; i < count; i++) {
+            const angle = (i / count) * Math.PI * 2;
+            const dist = Phaser.Math.Between(80, 240);
+            const color = colors[i % colors.length];
+            const size = Phaser.Math.Between(8, 18);
+            const piece = this.add.rectangle(x, y, size, size, color).setDepth(150);
+            this.tweens.add({
+                targets: piece,
+                x: x + Math.cos(angle) * dist,
+                y: y + Math.sin(angle) * dist,
+                alpha: 0,
+                scaleX: 0,
+                scaleY: 0,
+                duration: Phaser.Math.Between(400, 700),
+                ease: 'Power2',
+                onComplete: () => { if (piece?.destroy) piece.destroy(); }
+            });
+        }
+    }
+
+    // Título de sala con fade-in y fade-out al inicio de cada nivel.
+    showRoomTitle(label) {
+        if (!label) return;
+        const { width, height } = this.scale;
+        const title = this.add.text(width / 2, height / 2 - 80, label, {
+            fontSize: '68px',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 8
+        }).setOrigin(0.5).setDepth(250).setAlpha(0);
+
+        this.tweens.add({
+            targets: title,
+            alpha: 1,
+            duration: 400,
+            hold: 900,
+            yoyo: true,
+            onComplete: () => { if (title?.destroy) title.destroy(); }
+        });
+    }
+
+    // ── SISTEMA DE DIÁLOGO ────────────────────────────────────────────────────────────
+    // lines: [{ speaker: 'Name', text: '...' }, ...]
+    // onComplete: callback cuando se cierra el último mensaje.
+    showDialogue(lines, onComplete) {
+        if (!lines?.length) { onComplete?.(); return; }
+        this.dialogueActive = true;
+
+        const { width, height } = this.scale;
+        const boxH = 182;
+        const boxY = height - boxH - 14;
+
+        const bg = this.add.rectangle(width / 2, boxY + boxH / 2, width - 48, boxH, 0x000000)
+            .setAlpha(0.85).setDepth(400);
+        const border = this.add.rectangle(width / 2, boxY + boxH / 2, width - 48, boxH)
+            .setStrokeStyle(2, 0xffcc44).setFillStyle(0, 0).setDepth(401);
+
+        const nameLabel = this.add.text(44, boxY + 12, '', {
+            fontSize: '18px', color: '#FFD700', stroke: '#000000', strokeThickness: 3
+        }).setDepth(402);
+        const nameColors = lines.map(l => l.color ?? '#FFD700');
+
+        const bodyLabel = this.add.text(44, boxY + 38, '', {
+            fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 2,
+            wordWrap: { width: width - 96 }
+        }).setDepth(402);
+
+        const translationLabel = this.add.text(44, boxY + 108, '', {
+            fontSize: '13px', color: '#aaaaaa', fontStyle: 'italic',
+            wordWrap: { width: width - 96 }
+        }).setDepth(402);
+
+        const hint = this.add.text(width - 44, boxY + boxH - 12, '▶ SPACE', {
+            fontSize: '14px', color: '#888888'
+        }).setOrigin(1, 1).setDepth(402);
+        this.tweens.add({ targets: hint, alpha: 0, duration: 500, yoyo: true, repeat: -1 });
+
+        const all = [bg, border, nameLabel, bodyLabel, translationLabel, hint];
+        let idx = 0;
+
+        const show = () => {
+            nameLabel.setText(lines[idx].speaker ?? '');
+            nameLabel.setColor(nameColors[idx]);
+            const isEs = this.store?.language === 'es';
+            bodyLabel.setText(isEs ? (lines[idx].translation ?? lines[idx].text) : lines[idx].text);
+            translationLabel.setText(isEs ? '' : (lines[idx].translation ?? ''));
+        };
+        show();
+
+        const advance = () => {
+            idx++;
+            if (idx >= lines.length) {
+                all.forEach(o => { try { o.destroy(); } catch (e) { /* ignore */ } });
+                this._dialogueAdvance = null;
+                this.dialogueActive = false;
+                onComplete?.();
+            } else {
+                show();
+            }
+        };
+
+        this._dialogueAdvance = null;
+        this.time.delayedCall(500, () => {
+            this._dialogueAdvance = advance;
+        });
+    }
+
+    // Hook: la subclase devuelve el texto que se muestra al entrar a la sala.
+    getRoomTitle() { return null; }
+
+    // Hook: la subclase implementa la IA del enemigo y lógica específica de frame.
+    updateScene() { }
+
+    // ── SISTEMA DE PAUSA ───────────────────────────────────────────────────
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        if (this.isPaused) {
+            this.physics.world.pause();
+            this.showPauseMenu();
+            this._dimEntities();
+        } else {
+            this.physics.world.resume();
+            this.hidePauseMenu();
+            this._restoreEntities();
+        }
+    }
+
+    _dimEntities() {
+        this._setEntityAlpha(0.05);
+    }
+
+    _restoreEntities() {
+        this._setEntityAlpha(1);
+    }
+
+    _setEntityAlpha(a) {
+        if (this.player) this.player.alpha = a;
+        ['enemigo', 'enemigo2', 'skele', 'skele2', 'skele3', 'slime', 'slime2', 'slime3'].forEach(k => {
+            if (this[k]) this[k].alpha = a;
+        });
+    }
+
+    _addPauseOverlay() {
+        const { width, height } = this.scale;
+        const overlay = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.78);
+        this.pauseContainer.add(overlay);
+        const panel = this.add.rectangle(width / 2, height / 2, 420, 400, 0x0a0a0a)
+            .setStrokeStyle(3, 0xf0e68c);
+        this.pauseContainer.add(panel);
+    }
+
+    showPauseMenu() {
+        const { width, height } = this.scale;
+        const t = (en, es) => this.t(en, es);
+
+        this.pauseContainer = this.add.container(0, 0).setDepth(500);
+        this._addPauseOverlay();
+
+        const title = this.add.text(width / 2, height / 2 - 150, t('PAUSED', 'PAUSA'), {
+            fontSize: '36px', color: '#f0e68c', stroke: '#000000', strokeThickness: 5
+        }).setOrigin(0.5);
+        this.pauseContainer.add(title);
+
+        const items = [
+            { label: t('RESUME', 'REANUDAR'), action: () => this.togglePause() },
+            { label: t('CONTROLS', 'CONTROLES'), action: () => this.showPauseSubmenu('controls') },
+            { label: t('SETTINGS', 'AJUSTES'), action: () => this.showPauseSubmenu('settings') },
+            { label: t('QUIT TO MENU', 'SALIR AL MENÚ'), action: () => this.quitToMenu() },
+        ];
+
+        items.forEach((item, i) => {
+            const y = height / 2 - 60 + i * 70;
+            const btn = this.add.text(width / 2, y, item.label, {
+                fontSize: '18px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+            btn.on('pointerover', () => btn.setColor('#f0e68c'));
+            btn.on('pointerout', () => btn.setColor('#ffffff'));
+            btn.on('pointerdown', () => item.action());
+
+            this.pauseContainer.add(btn);
+        });
+    }
+
+    hidePauseMenu() {
+        if (this.pauseContainer) {
+            this.pauseContainer.destroy();
+            this.pauseContainer = null;
+        }
+    }
+
+    showPauseSubmenu(type) {
+        const { width, height } = this.scale;
+        const t = (en, es) => this.t(en, es);
+        const store = this.store;
+
+        this.pauseContainer.removeAll(true);
+        this._addPauseOverlay();
+
+        if (type === 'controls') {
+            const cTitle = this.add.text(width / 2, height / 2 - 150, t('CONTROLS', 'CONTROLES'), {
+                fontSize: '28px', color: '#f0e68c', stroke: '#000000', strokeThickness: 5
+            }).setOrigin(0.5);
+            this.pauseContainer.add(cTitle);
+
+            const controls = [
+                { key: 'WASD / ARROWS', desc: t('Move', 'Moverse') },
+                { key: 'SPACE', desc: t('Attack (combo x3)', 'Atacar (combo x3)') },
+                { key: 'SHIFT', desc: t('Block', 'Bloquear') },
+                { key: t('Double tap dir.', 'Doble tap direc.'), desc: 'Sprint' },
+            ];
+
+            controls.forEach((c, i) => {
+                const y = height / 2 - 70 + i * 55;
+                const keyT = this.add.text(width / 2 - 140, y, c.key, {
+                    fontSize: '13px', color: '#f0e68c', stroke: '#000000', strokeThickness: 2
+                }).setOrigin(0, 0.5);
+                const descT = this.add.text(width / 2 + 20, y, c.desc, {
+                    fontSize: '12px', color: '#cccccc', stroke: '#000000', strokeThickness: 2
+                }).setOrigin(0, 0.5);
+                this.pauseContainer.add(keyT);
+                this.pauseContainer.add(descT);
+            });
+
+            const hint = this.add.text(width / 2, height / 2 + 110,
+                t('Clear all enemies to advance.', 'Elimina todos los enemigos para avanzar.'), {
+                fontSize: '10px', color: '#666666'
+            }).setOrigin(0.5);
+            this.pauseContainer.add(hint);
+        }
+
+        if (type === 'settings') {
+            const sTitle = this.add.text(width / 2, height / 2 - 150, t('SETTINGS', 'AJUSTES'), {
+                fontSize: '28px', color: '#f0e68c', stroke: '#000000', strokeThickness: 5
+            }).setOrigin(0.5);
+            this.pauseContainer.add(sTitle);
+
+            const langLabel = this.add.text(width / 2 - 140, height / 2 - 70, t('LANGUAGE', 'IDIOMA'), {
+                fontSize: '14px', color: '#f0e68c', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0, 0.5);
+            this.pauseContainer.add(langLabel);
+
+            const enBtn = this.add.text(width / 2 + 10, height / 2 - 70, 'EN', {
+                fontSize: '16px', color: store.language === 'en' ? '#f0e68c' : '#888888',
+                stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            enBtn.on('pointerdown', () => {
+                if (store.language !== 'en') { store.setLanguage('en'); this.showPauseSubmenu('settings'); }
+            });
+            this.pauseContainer.add(enBtn);
+
+            const esBtn = this.add.text(width / 2 + 70, height / 2 - 70, 'ES', {
+                fontSize: '16px', color: store.language === 'es' ? '#f0e68c' : '#888888',
+                stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            esBtn.on('pointerdown', () => {
+                if (store.language !== 'es') { store.setLanguage('es'); this.showPauseSubmenu('settings'); }
+            });
+            this.pauseContainer.add(esBtn);
+
+            const musicLabel = this.add.text(width / 2 - 140, height / 2 - 10, t('MUSIC', 'MÚSICA'), {
+                fontSize: '14px', color: '#f0e68c', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0, 0.5);
+            this.pauseContainer.add(musicLabel);
+
+            const bgm = this.sound.get('musicforscenes');
+            const volText = this.add.text(width / 2, height / 2 - 10,
+                `${Math.round((bgm?.volume ?? 0.15) * 100)}`, {
+                fontSize: '14px', color: '#cccccc', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5);
+            this.pauseContainer.add(volText);
+
+            const volDown = this.add.text(width / 2 - 60, height / 2 - 10, '◀', {
+                fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            volDown.on('pointerdown', () => {
+                const bgm2 = this.sound.get('musicforscenes');
+                if (bgm2) {
+                    const newVol = Math.max(0, Math.round((bgm2.volume - 0.05) * 100) / 100);
+                    bgm2.setVolume(newVol);
+                }
+                this.showPauseSubmenu('settings');
+            });
+            this.pauseContainer.add(volDown);
+
+            const volUp = this.add.text(width / 2 + 60, height / 2 - 10, '▶', {
+                fontSize: '20px', color: '#ffffff', stroke: '#000000', strokeThickness: 2
+            }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+            volUp.on('pointerdown', () => {
+                const bgm2 = this.sound.get('musicforscenes');
+                if (bgm2) {
+                    const newVol = Math.min(1, Math.round((bgm2.volume + 0.05) * 100) / 100);
+                    bgm2.setVolume(newVol);
+                }
+                this.showPauseSubmenu('settings');
+            });
+            this.pauseContainer.add(volUp);
+        }
+
+        const backBtn = this.add.text(width / 2, height / 2 + 150, t('BACK', 'VOLVER'), {
+            fontSize: '16px', color: '#ffffff', stroke: '#000000', strokeThickness: 3
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+        backBtn.on('pointerover', () => backBtn.setColor('#f0e68c'));
+        backBtn.on('pointerout', () => backBtn.setColor('#ffffff'));
+        backBtn.on('pointerdown', () => {
+            this.pauseContainer.removeAll(true);
+            this.showPauseMenu();
+        });
+        this.pauseContainer.add(backBtn);
+    }
+
+    quitToMenu() {
+        this.sound.stopAll();
+        this.store.saveProgress();
+        this.store.setContinueRun(false);
+        window.dispatchEvent(new CustomEvent('koh-quit'));
+    }
+}

@@ -7,51 +7,100 @@ on:
     branches: [main, develop]
 
 jobs:
-  build-and-test:
+  frontend:
+    name: Frontend — test y build
     runs-on: ubuntu-latest
 
     steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Instalar pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: Instalar Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
 
       - name: Instalar dependencias
+        working-directory: frontend
         run: pnpm install
 
       - name: Correr tests unitarios
+        working-directory: frontend
         run: pnpm test:unit --run
 
       - name: Build de producción
+        working-directory: frontend
         run: pnpm build
 
-  docker:
-    needs: build-and-test
+  backend:
+    name: Backend — test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: backend/pnpm-lock.yaml
+
+      - name: Instalar dependencias
+        working-directory: backend
+        run: pnpm install
+
+      - name: Correr tests
+        working-directory: backend
+        run: pnpm test
+
+  docker-frontend:
+    name: Docker — build y push frontend
+    needs: [frontend, backend]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Descargar código
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Login a DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOCKEN }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build y push imagen
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./frontend
           push: true
-          tags: bazzty/knight-of-hope:latest
+          tags: bazzty/knight-of-hope-frontend:latest
+
+  docker-backend:
+    name: Docker — build y push backend
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login a DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build y push imagen
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: bazzty/knight-of-hope-backend:latest

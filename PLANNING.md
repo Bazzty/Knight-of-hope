@@ -114,22 +114,20 @@
 - `Dockerfile` multi-etapa (Node 22 + nginx), `docker-compose.yml` y `.dockerignore` configurados
 - Imagen subida a DockerHub (`bazzty/knight-of-hope`)
 - `README.md` completo con instrucciones de desarrollo, Docker y CI/CD
-- Música y efectos de sonido agregados al juego
-
-### Lo que no se logró y el motivo
+- Música y efectos de sonido agregados al juego.
 > Se completaron todas las tareas planificadas para esta semana.
 
 ## Tareas de mejoras futuras FRONTEND
-- [ ] Vista: Mejorar Hitbox
+- [x] Vista: Mejorar Hitbox
 - [ ] Aumentar niveles
-- [ ] Colocar barra de vida a personaje jugador
-- [ ] KnockBack a jugador y enemigos
-- [ ] Agregar configuración y salida
-- [ ] Disminuir los efectos visuales
-- [ ] Ajustar Visualizacion navegador
-- [ ] Intercambio de idiomas Español-Inglés
-- [ ] Intrucciones de jugabilidad
-- [ ] Pulir movimientos de los personajes
+- [x] Colocar barra de vida a personaje jugador
+- [x] KnockBack a jugador y enemigos
+- [x] Agregar configuración y salida
+- [x] Disminuir los efectos visuales
+- [x] Ajustar Visualizacion navegador
+- [x] Intercambio de idiomas Español-Inglés
+- [x] Intrucciones de jugabilidad
+- [x] Pulir movimientos de los personajes
 
 ---
 
@@ -144,45 +142,64 @@
 ## Semana 1 — Replanificación, setup del backend y autenticación
 
 ### Tareas planificadas
-- [ ] Actualizar `DESIGN.md` con la arquitectura fullstack (frontend, API REST, MongoDB, servicio externo)
-- [ ] Actualizar `PLANNING.md` con la nueva planificación por semana
-- [ ] Estructurar el repositorio con carpetas `frontend/` y `backend/`
-- [ ] Inicializar el proyecto backend (Node.js + Express + pnpm)
-- [ ] Configurar conexión a MongoDB 
-- [ ] Configurar GitHub Actions (`.github/workflows/main.yml`): linter y pruebas unitarias de frontend y backend en cada push
-- [ ] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
-- [ ] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
-- [ ] Endpoint `POST /api/auth/login` — login con emisión de JWT
+- [x] Actualizar `DESIGN.md` con la arquitectura fullstack (frontend, API REST, MongoDB, servicio externo)
+- [x] Actualizar `PLANNING.md` con la nueva planificación por semana
+- [x] Estructurar el repositorio con carpetas `frontend/` y `backend/`
+- [x] Inicializar el proyecto backend (Node.js + Express + pnpm)
+- [x] Configurar conexión a MongoDB 
+- [x] Configurar GitHub Actions (`.github/workflows/ci.yml`): pruebas unitarias de frontend y backend en cada push
+- [x] Modelo `User` en MongoDB (nombre, email, password hash, fecha de creación)
+- [x] Endpoint `POST /api/auth/register` — registro de usuario con contraseña hasheada (bcrypt)
+- [x] Endpoint `POST /api/auth/login` — login con emisión de JWT
 - [ ] Aplicar las mejoras y correcciones del feedback de la Solemne 2 al juego
-- [ ] Middleware de autenticación para rutas protegidas
-- [ ] Pantalla de registro e inicio de sesión en el frontend (Vue)
-- [ ] Integrar token JWT en el frontend (almacenamiento y envío en headers)
+- [x] Middleware de autenticación para rutas protegidas
+- [x] Pantalla de registro e inicio de sesión en el frontend (Vue)
+- [x] Integrar token JWT en el frontend (almacenamiento y envío en headers)
 
 ### Lo que se logró completar
-> _(completar al finalizar la semana)_
+- Modelo `User` en MongoDB con nombre, email y contraseña hasheada con bcrypt
+- Endpoints `POST /api/auth/register` y `POST /api/auth/login` con emisión de JWT
+- Autenticación implementada con HttpOnly Cookies (protección contra XSS): el token nunca es accesible desde JavaScript
+- Middleware `auth.js` para proteger rutas privadas, lee el token desde la cookie
+- Endpoint `POST /api/auth/logout` que limpia la cookie del servidor
+- CORS configurado con `credentials: true` para permitir el envío de cookies entre frontend y backend
+- Store de autenticación en Pinia (`stores/auth.js`): gestiona el usuario en `sessionStorage`, sin exponer el token
+- Pantalla de login/registro (`AuthView.vue`) en estilo pixel art, con toggle entre modos, mensajes de error y soporte ES/EN
+- Rutas protegidas con guard en Vue Router: `/home` y `/game` requieren sesión activa
+- `/` como pantalla principal de login; redirige a `/home` al autenticarse
+- Guard con `replace: true` para que el historial del navegador no permita volver a rutas protegidas sin sesión
 
 ### Lo que no se logró y el motivo
-> _(completar al finalizar la semana)_
+- **Aplicar mejoras del feedback de la Solemne 2:** por temas de tiempo y prioridad se decidió postergar esta tarea. Se implementará durante la semana final junto al cierre del proyecto para "Aumento de niveles".
 
 ---
 
 ## Semana 2 — Progreso persistente, mejoras S2 y servicio externo 
 
 ### Tareas planificadas
-- [ ] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
-- [ ] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
-- [ ] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
-- [ ] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
-- [ ] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
+- [x] Modelo `GameProgress` en MongoDB: usuario, sala actual, HP y mejoras activas
+- [x] Endpoint `POST /api/progress/save` — guarda el estado del run al salir del juego (ruta protegida con JWT)
+- [x] Endpoint `GET /api/progress` — recupera el último progreso guardado del usuario autenticado
+- [x] Al iniciar sesión, detectar si existe un run guardado y ofrecer continuar desde la sala guardada o empezar de nuevo
+- [x] Al salir del juego, llamar automáticamente al endpoint de guardado con la sala actual, HP y mejoras activas
 - [ ] Integrar el servicio REST externo elegido (definido en `DESIGN.md`)
 - [ ] Pruebas unitarias del backend: endpoints de auth y progreso
 - [ ] Pruebas unitarias del frontend (nuevos componentes de auth y progreso)
 
 ### Lo que se logró completar
-> _(completar al finalizar la semana)_
+- Modelo `GameProgress` en MongoDB con campos `usuario`, `salaActual`, `hp` y `mejorasActivas[]`
+- Endpoints `GET /api/progress` y `POST /api/progress/save` protegidos con middleware JWT
+- Store `gameState.js` actualizado con `loadProgress()` y `saveProgress()`, llamados automáticamente al cambiar HP, sala o mejoras
+- `loadProgress()` re-aplica las mejoras activas para reconstruir los stats del jugador correctamente
+- Al hacer PLAY se detecta si existe un run guardado y se ofrece continuar desde la sala guardada o empezar de nuevo
+- Guardado automático al salir del juego (sala actual, HP y mejoras activas)
+- Menú de pausa en el juego (tecla ESC): reanudar, controles, ajustes de volumen e idioma, y salir al menú principal
+- Los personajes se oscurecen visualmente al pausar para no tapar el menú
 
 ### Lo que no se logró y el motivo
-> _(completar al finalizar la semana)_
+- **Servicio REST externo:** no se alcanzó a integrar por falta de tiempo, se implementará en la semana final.
+- **Pruebas unitarias del backend:** no se realizaron durante esta semana, se implementarán en la semana final.
+- **Pruebas unitarias del frontend** (nuevos componentes de auth y progreso): no se realizaron durante esta semana, se implementarán en la semana final.
 
 ---
 

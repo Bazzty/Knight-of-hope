@@ -8,12 +8,8 @@ const VALID_MEJORAS = ['health', 'attack', 'speed']
 
 exports.getProgress = async (req, res) => {
     try {
-        const progress = await GameProgress.findOneAndUpdate(
-            { usuario: req.user.id },
-            { $setOnInsert: { salaActual: 1, hp: 10, mejorasActivas: [] } },
-            { new: true, upsert: true }
-        )
-        res.json(progress)
+        const progress = await GameProgress.findOne({ usuario: req.user.id })
+        res.json(progress || { salaActual: 1, hp: 10, mejorasActivas: [] })
     } catch {
         res.status(500).json({ message: 'Error en el servidor' })
     }

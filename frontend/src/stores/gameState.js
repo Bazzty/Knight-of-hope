@@ -87,6 +87,11 @@ export const useGameStore = defineStore('game', {
       this.continueRun = value
     },
 
+    cancelPendingSave() {
+      clearTimeout(_saveTimer)
+      _saveTimer = null
+    },
+
     saveProgress() {
       clearTimeout(_saveTimer)
       _saveTimer = setTimeout(async () => {

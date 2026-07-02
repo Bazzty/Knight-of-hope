@@ -152,6 +152,7 @@ function newGame() {
 
 async function logout() {
   playButtonSfx()
+  store.cancelPendingSave()
   await auth.logout()
   router.push('/')
 }

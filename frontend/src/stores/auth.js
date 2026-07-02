@@ -22,7 +22,7 @@ export const useAuthStore = defineStore('auth', {
           this._clearUser()
         }
       } catch {
-        // red caída — mantener estado actual
+        this._clearUser()
       }
     },
 
